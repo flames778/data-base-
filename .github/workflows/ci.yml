@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: precpearl
+          POSTGRES_PASSWORD: precpearl_ci
+          POSTGRES_DB: precpearl_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U precpearl"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://precpearl:precpearl_ci@localhost:5432/precpearl_ci
+      DIRECT_URL: postgresql://precpearl:precpearl_ci@localhost:5432/precpearl_ci
+      AUTH_SECRET: ci-only-not-a-real-secret-do-not-reuse
+      NEXTAUTH_URL: http://localhost:3000
+      MINIO_ENDPOINT: localhost
+      MINIO_PORT: "9000"
+      MINIO_USE_SSL: "false"
+      MINIO_REGION: us-east-1
+      MINIO_ACCESS_KEY: ci
+      MINIO_SECRET_KEY: ci-secret-key
+      MINIO_BUCKET: precpearl-ci
+      SEED_DEV_ACCOUNTS: "false"
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build

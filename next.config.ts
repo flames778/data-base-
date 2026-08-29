@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -52,4 +53,22 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Sentry build-time options. All optional — the app runs fine without a
+  // Sentry account; error reporting is simply disabled until SENTRY_DSN /
+  // NEXT_PUBLIC_SENTRY_DSN and these org/project values are set.
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  silent: true,
+
+  // Proxies Sentry's event traffic through this app's own domain
+  // (/monitoring) instead of directly to *.sentry.io. Avoids needing to
+  // widen the Content-Security-Policy's connect-src, and avoids ad-blockers
+  // that block requests to sentry.io.
+  tunnelRoute: "/monitoring",
+
+  // Reduce noisy source-map upload logs; only matters when authToken is set.
+  disableLogger: true,
+});
