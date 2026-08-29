@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: precpearl-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: precpearl
+      POSTGRES_USER: precpearl
+      POSTGRES_PASSWORD: precpearl_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - precpearl_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U precpearl -d precpearl"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: precpearl-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: precpearl
+      MINIO_ROOT_PASSWORD: precpearl-dev-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - precpearl_minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  precpearl_pgdata:
+  precpearl_minio_data:

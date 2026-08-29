@@ -1,0 +1,660 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// ENUMS
+// =====================================================================
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum RoleName {
+  CEO
+  ADMIN
+  PROJECT_LEAD
+  TEAM_MEMBER
+  FIELD_STAFF
+  INTERN
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum ReportStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  REVISION_REQUESTED
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum ReportFieldType {
+  TEXT
+  TEXTAREA
+  DATE
+  NUMBER
+  SELECT
+  MULTISELECT
+  URL
+}
+
+enum DocumentClassification {
+  INTERNAL
+  CONFIDENTIAL
+  RESTRICTED
+}
+
+enum VitalCategory {
+  LEGAL
+  CONTRACTS
+  LICENSES
+  CERTIFICATIONS
+  INSURANCE
+  CORPORATE
+  SENSITIVE_ENGINEERING
+  POLICIES
+  OTHER
+}
+
+enum PostCategory {
+  CHALLENGES
+  CLAIMS
+  SUGGESTIONS
+  TECHNICAL_ISSUES
+  QUESTIONS
+  ANNOUNCEMENTS
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IssueStatus {
+  OPEN
+  UNDER_REVIEW
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum IssueVisibility {
+  TEAM
+  PROJECT
+  MANAGEMENT
+  PRIVATE
+}
+
+enum ClaimStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  RESOLVED
+  CLOSED
+}
+
+enum NotificationType {
+  REPORT_DEADLINE
+  REPORT_SUBMITTED
+  REPORT_APPROVED
+  REVISION_REQUESTED
+  ISSUE_ASSIGNED
+  ISSUE_UPDATED
+  CLAIM_UPDATED
+  PROJECT_ASSIGNMENT
+  ANNOUNCEMENT
+  COMMENT
+}
+
+// =====================================================================
+// CORE: AUTH & RBAC
+// =====================================================================
+
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  name       String
+  jobTitle   String?
+  department String?
+  avatarUrl  String?
+  phone      String?
+  roleId     String
+  role       Role       @relation(fields: [roleId], references: [id])
+  status     UserStatus @default(ACTIVE)
+  lastLogin  DateTime?
+  passwordHash String?
+  passwordResetToken  String?   @unique
+  passwordResetExpiresAt DateTime?
+  mustChangePassword  Boolean   @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  ownedProjects         Project[]             @relation("ProjectLead")
+  memberships           ProjectMember[]
+  reports               Report[]
+  documents             Document[]
+  documentVersions      DocumentVersion[]
+  forumPosts            ForumPost[]
+  comments              Comment[]
+  createdIssues         Issue[]               @relation("IssueCreator")
+  assignedIssues        Issue[]               @relation("IssueAssignee")
+  claims                Claim[]               @relation("ClaimApplicant")
+  claimComments         ClaimComment[]
+  claimResolutions      Claim[]               @relation("ClaimReviewer")
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+  issueComments         IssueComment[]
+  reportFieldValues     ReportFieldValue[]
+  teams                 Team[]
+  userTeamMemberships   UserTeamMembership[]
+  reportStatusHistories ReportStatusHistory[]
+  issueStatusHistories  IssueStatusHistory[]
+  claimStatusHistories  ClaimStatusHistory[]
+
+  @@index([email])
+  @@index([roleId])
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        RoleName         @unique
+  displayName String
+  description String?
+  systemRole  Boolean          @default(false)
+  permissions RolePermission[]
+  users       User[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  name        String
+  description String?
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// =====================================================================
+// TEAMS
+// =====================================================================
+
+model Team {
+  id          String               @id @default(cuid())
+  name        String               @unique
+  description String?
+  managerId   String?
+  manager     User?                @relation(fields: [managerId], references: [id])
+  members     UserTeamMembership[]
+  projects    Project[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@map("teams")
+}
+
+model UserTeamMembership {
+  id       String   @id @default(cuid())
+  userId   String
+  teamId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, teamId])
+  @@map("user_team_memberships")
+}
+
+// =====================================================================
+// PROJECTS
+// =====================================================================
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  client      String?
+  leadId      String?
+  lead        User?         @relation("ProjectLead", fields: [leadId], references: [id])
+  teamId      String?
+  team        Team?         @relation(fields: [teamId], references: [id])
+  status      ProjectStatus @default(PLANNING)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  members   ProjectMember[]
+  reports   Report[]
+  documents Document[]
+  issues    Issue[]
+  claims    Claim[]
+  forumPosts ForumPost[]
+
+  @@index([leadId])
+  @@index([teamId])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+// =====================================================================
+// REPORTS
+// =====================================================================
+
+model ReportTemplate {
+  id          String                @id @default(cuid())
+  name        String
+  code        String                @unique
+  description String?
+  category    String
+  fields      ReportTemplateField[]
+  reports     Report[]
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@map("report_templates")
+}
+
+model ReportTemplateField {
+  id          String          @id @default(cuid())
+  templateId  String
+  template    ReportTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  key         String
+  label       String
+  type        ReportFieldType
+  required    Boolean         @default(false)
+  placeholder String?
+  options     String? // JSON array of select options
+  sortOrder   Int             @default(0)
+
+  @@unique([templateId, key])
+  @@map("report_template_fields")
+}
+
+model Report {
+  id              String                @id @default(cuid())
+  templateId      String
+  template        ReportTemplate        @relation(fields: [templateId], references: [id])
+  authorId        String
+  author          User                  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         Project?              @relation(fields: [projectId], references: [id])
+  status          ReportStatus          @default(DRAFT)
+  reportingPeriod String?
+  reportingMonth  String?
+  title           String?
+  deadline        DateTime?
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedById    String?
+  reviewerId      String?
+  revisionNote    String?
+  data            Json?
+  fieldValues     ReportFieldValue[]
+  statusHistory   ReportStatusHistory[]
+  comments        Comment[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([authorId])
+  @@index([projectId])
+  @@index([templateId])
+  @@index([status])
+  @@map("reports")
+}
+
+model ReportFieldValue {
+  id         String  @id @default(cuid())
+  reportId   String
+  fieldKey   String
+  fieldLabel String
+  value      String?
+  report     Report  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  user       User?   @relation(fields: [userId], references: [id])
+  userId     String?
+
+  @@index([reportId])
+  @@map("report_field_values")
+}
+
+model ReportStatusHistory {
+  id          String        @id @default(cuid())
+  reportId    String
+  report      Report        @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  fromStatus  ReportStatus?
+  toStatus    ReportStatus
+  changedById String?
+  changedBy   User?         @relation(fields: [changedById], references: [id])
+  note        String?
+  createdAt   DateTime      @default(now())
+
+  @@index([reportId])
+  @@map("report_status_history")
+}
+
+// =====================================================================
+// DOCUMENTS
+// =====================================================================
+
+model Document {
+  id               String                 @id @default(cuid())
+  title            String
+  description      String?
+  category         String?
+  projectId        String?
+  project          Project?               @relation(fields: [projectId], references: [id])
+  uploaderId       String
+  uploader         User                   @relation(fields: [uploaderId], references: [id])
+  storageKey       String?
+  storageProvider  String                 @default("minio")
+  fileName         String
+  mimeType         String
+  fileSize         Int
+  classification   DocumentClassification @default(INTERNAL)
+  isVital          Boolean                @default(false)
+  vitalCategory    VitalCategory?
+  version          Int                    @default(1)
+  isDeleted        Boolean                @default(false)
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  versions          DocumentVersion[]
+  accessRetrictions DocumentAccessRule[]
+
+  @@index([projectId])
+  @@index([uploaderId])
+  @@index([isVital])
+  @@index([classification])
+  @@map("documents")
+}
+
+model DocumentVersion {
+  id               String   @id @default(cuid())
+  documentId       String
+  document         Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version          Int
+  storageKey       String?
+  fileName         String
+  mimeType         String
+  fileSize         Int
+  uploadedById     String
+  uploadedBy       User     @relation(fields: [uploadedById], references: [id])
+  changeNote       String?
+  createdAt        DateTime @default(now())
+
+  @@unique([documentId, version])
+  @@index([documentId])
+  @@map("document_versions")
+}
+
+model DocumentAccessRule {
+  id          String   @id @default(cuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  roleId      String?
+  teamId      String?
+  userId      String?
+  canView     Boolean  @default(true)
+  canDownload Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([documentId])
+  @@map("document_access_rules")
+}
+
+// =====================================================================
+// STAFF HUB / FORUM
+// =====================================================================
+
+model ForumPost {
+  id             String       @id @default(cuid())
+  title          String
+  content        String
+  category       PostCategory @default(QUESTIONS)
+  authorId       String
+  author         User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id])
+  isPinned       Boolean      @default(false)
+  isAnnouncement Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  comments Comment[]
+
+  @@index([authorId])
+  @@index([category])
+  @@map("forum_posts")
+}
+
+model Comment {
+  id        String     @id @default(cuid())
+  content   String
+  authorId  String
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postId    String?
+  post      ForumPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reportId  String?
+  report    Report?    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  issueId   String?
+  issue     Issue?     @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  claimId   String?
+  claim     Claim?     @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([authorId])
+  @@map("comments")
+}
+
+// =====================================================================
+// ISSUES / CHALLENGES
+// =====================================================================
+
+model Issue {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  category    PostCategory    @default(QUESTIONS)
+  priority    IssuePriority   @default(MEDIUM)
+  status      IssueStatus     @default(OPEN)
+  visibility  IssueVisibility @default(TEAM)
+  projectId   String?
+  project     Project?        @relation(fields: [projectId], references: [id])
+  creatorId   String
+  creator     User            @relation("IssueCreator", fields: [creatorId], references: [id])
+  assigneeId  String?
+  assignee    User?           @relation("IssueAssignee", fields: [assigneeId], references: [id])
+  attachments Json?
+  resolution  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  statusHistory IssueStatusHistory[]
+  comments      Comment[]
+  issueComments IssueComment[]
+
+  @@index([creatorId])
+  @@index([assigneeId])
+  @@index([projectId])
+  @@index([status])
+  @@map("issues")
+}
+
+model IssueStatusHistory {
+  id          String       @id @default(cuid())
+  issueId     String
+  issue       Issue        @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  fromStatus  IssueStatus?
+  toStatus    IssueStatus
+  changedById String?
+  changedBy   User?        @relation(fields: [changedById], references: [id])
+  note        String?
+  createdAt   DateTime     @default(now())
+
+  @@index([issueId])
+  @@map("issue_status_history")
+}
+
+model IssueComment {
+  id        String   @id @default(cuid())
+  content   String
+  issueId   String
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([issueId])
+  @@map("issue_comments")
+}
+
+// =====================================================================
+// CLAIMS / REQUESTS
+// =====================================================================
+
+model Claim {
+  id           String      @id @default(cuid())
+  claimType    String
+  title        String
+  description  String
+  amount       Decimal?    @db.Decimal(12, 2)
+  projectId    String?
+  project      Project?    @relation(fields: [projectId], references: [id])
+  applicantId  String
+  applicant    User        @relation("ClaimApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  status       ClaimStatus @default(SUBMITTED)
+  reviewerId   String?
+  reviewer     User?       @relation("ClaimReviewer", fields: [reviewerId], references: [id])
+  reviewerNote String?
+  attachments  Json?
+  resolution   String?
+  resolvedAt   DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  statusHistory ClaimStatusHistory[]
+  comments      Comment[]
+  claimComments ClaimComment[]
+
+  @@index([applicantId])
+  @@index([projectId])
+  @@index([status])
+  @@map("claims")
+}
+
+model ClaimStatusHistory {
+  id          String       @id @default(cuid())
+  claimId     String
+  claim       Claim        @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  fromStatus  ClaimStatus?
+  toStatus    ClaimStatus
+  changedById String?
+  changedBy   User?        @relation(fields: [changedById], references: [id])
+  note        String?
+  createdAt   DateTime     @default(now())
+
+  @@index([claimId])
+  @@map("claim_status_history")
+}
+
+model ClaimComment {
+  id        String   @id @default(cuid())
+  content   String
+  claimId   String
+  claim     Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([claimId])
+  @@map("claim_comments")
+}
+
+// =====================================================================
+// NOTIFICATIONS
+// =====================================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String?
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@map("notifications")
+}
+
+// =====================================================================
+// AUDIT LOGS (append-only)
+// =====================================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  resource   String?
+  resourceId String?
+  ipAddress  String?
+  userAgent  String?
+  result     String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
