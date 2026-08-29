@@ -77,7 +77,13 @@ export async function POST(req: Request) {
     }
     const mimeOk = ALLOWED_MIME.has(file.type);
     const extOk = ALLOWED_EXT.test(file.name);
-    if (!mimeOk && !extOk) {
+    // Require BOTH the (client-supplied) MIME type and the file extension to
+    // be on the allowlist. The previous `!mimeOk && !extOk` check rejected a
+    // file only when *both* signals were bad, so a disallowed/spoofed file
+    // could sneak through by winning on just one signal (e.g. an executable
+    // renamed to "invoice.pdf", or a file served with a forged
+    // "application/pdf" Content-Type but a dangerous extension).
+    if (!mimeOk || !extOk) {
       return NextResponse.json(
         { error: "File type not allowed." },
         { status: 400 }

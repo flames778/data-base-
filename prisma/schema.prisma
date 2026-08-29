@@ -658,3 +658,22 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+
+// =====================================================================
+// LOGIN RATE LIMITING
+// =====================================================================
+
+// One row per failed login attempt. Used to lock out brute-force attempts
+// on both the submitted email and the source IP. Rows are cheap and can be
+// pruned periodically (e.g. a cron job deleting rows older than a day) —
+// nothing else depends on retaining them long-term.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@map("login_attempts")
+}

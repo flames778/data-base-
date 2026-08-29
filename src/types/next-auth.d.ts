@@ -23,6 +23,8 @@ declare module "next-auth/jwt" {
     role?: RoleName;
     permissions?: PermissionKey[];
     mustChangePassword?: boolean;
+    /** Epoch ms when role/permissions were last refreshed from the DB. */
+    permissionsCheckedAt?: number;
   }
 }
 

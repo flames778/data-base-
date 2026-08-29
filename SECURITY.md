@@ -10,7 +10,14 @@
   are always derived server-side from the session/token — the frontend is never
   trusted.
 - Disabled (`status = DISABLED`) users are rejected at sign-in and mid-session
-  (their JWT identity is voided on the next refresh).
+  (their JWT identity/role/permissions are re-checked against the database at
+  most once a minute; a disable or role change takes effect on the next
+  check rather than only at the JWT's 30-day expiry).
+- Sign-in is **rate-limited** (`src/lib/login-rate-limit.ts`): 5 failed
+  attempts per email and 20 per source IP within a 15-minute window, tracked
+  in the `login_attempts` table so it works correctly across multiple app
+  instances. This is a baseline; add edge/CDN/WAF-level protection too if
+  your deployment has one in front of it.
 - `mustChangePassword` forces a password change on first sign-in and after
   admin-initiated resets.
 
