@@ -28,35 +28,67 @@ export default async function LoginPage({
     : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800 px-4">
-      <div className="w-full max-w-md">
+    <div
+      className="flex min-h-screen items-center justify-center px-4"
+      style={{
+        background: "linear-gradient(135deg, #0c1c35 0%, #0f2547 50%, #112d55 100%)",
+      }}
+    >
+      {/* Subtle background pattern */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      <div className="relative w-full max-w-[400px]">
+        {/* Logo / brand */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-white/10 text-2xl font-black text-white">
-            PP
+          <div
+            className="mb-4 flex h-[60px] w-[60px] items-center justify-center rounded-2xl shadow-2xl"
+            style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)" }}
+          >
+            <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white">Prec Pearl</h1>
-          <p className="mt-1 text-sm text-blue-200">
-            Internal Operations &amp; Records Management Platform
+          <h1 className="text-xl font-bold text-white tracking-tight">Prec Pearl</h1>
+          <p className="mt-1.5 text-[13px] text-blue-300/80 font-medium">
+            Internal Operations &amp; Records Management
           </p>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-white p-8 shadow-2xl">
-          <h2 className="text-lg font-semibold text-slate-900">Sign in</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Use your authorized Prec Pearl account please (email + password).
-          </p>
+        {/* Card */}
+        <div
+          className="rounded-2xl border p-8 shadow-2xl"
+          style={{
+            background: "rgba(255,255,255,0.98)",
+            borderColor: "rgba(255,255,255,0.12)",
+          }}
+        >
+          <div className="mb-6">
+            <h2 className="text-[18px] font-semibold text-slate-900 tracking-tight">Welcome back</h2>
+            <p className="mt-1 text-[13px] text-slate-500">
+              Sign in with your authorized account to continue.
+            </p>
+          </div>
 
           {errorMessage && (
             <div
               role="alert"
-              className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+              className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700"
             >
+              <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
               {errorMessage}
             </div>
           )}
 
           <form
-            className="mt-6 space-y-4"
+            className="space-y-4"
             action={async (formData: FormData) => {
               "use server";
               await signIn("credentials", {
@@ -69,9 +101,9 @@ export default async function LoginPage({
             <div>
               <label
                 htmlFor="email"
-                className="mb-1 block text-sm font-medium text-slate-700"
+                className="mb-1.5 block text-[13px] font-medium text-slate-700"
               >
-                Email
+                Email address
               </label>
               <input
                 id="email"
@@ -79,43 +111,46 @@ export default async function LoginPage({
                 type="email"
                 required
                 autoComplete="email"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-[14px] text-slate-900 placeholder-slate-400 transition-all focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-3 focus:ring-blue-100"
                 placeholder="you@precpearl.local"
               />
             </div>
             <div>
-              <label
-                htmlFor="password"
-                className="mb-1 block text-sm font-medium text-slate-700"
-              >
-                Password
-              </label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="text-[13px] font-medium text-slate-700"
+                >
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-[12px] font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
                 autoComplete="current-password"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-[14px] text-slate-900 placeholder-slate-400 transition-all focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-3 focus:ring-blue-100"
                 placeholder="••••••••"
               />
             </div>
             <button
               type="submit"
-              className="w-full rounded-md bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-800"
+              className="mt-2 w-full rounded-xl px-4 py-3 text-[14px] font-semibold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.99]"
+              style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)" }}
             >
               Sign in
             </button>
           </form>
 
-          <p className="mt-4 text-center text-sm">
-            <Link href="/forgot-password" className="font-medium text-blue-600 hover:underline">
-              Forgot your password?
-            </Link>
-          </p>
-
-          <p className="mt-4 text-center text-xs text-slate-400">
-            Access is restricted to authorized Prec Pearl employees.
+          <p className="mt-6 text-center text-[11px] text-slate-400">
+            Access is restricted to authorized Prec Pearl employees only.
           </p>
         </div>
       </div>

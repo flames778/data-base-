@@ -27,9 +27,10 @@ export default async function AppLayout({
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-border bg-white/90 px-5 py-3 backdrop-blur lg:px-8">
+        {/* Top header */}
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-border bg-white/95 px-6 py-3 backdrop-blur-md lg:px-8">
           <div className="hidden lg:block">
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="text-[13px] font-medium text-muted-foreground">
               {new Date().toLocaleDateString("en-GB", {
                 weekday: "long",
                 day: "numeric",
@@ -38,10 +39,10 @@ export default async function AppLayout({
               })}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link
               href="/change-password"
-              className="rounded-md border border-border bg-white px-3 py-2 text-sm text-muted-foreground hover:bg-zinc-50"
+              className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm hover:border-border hover:bg-zinc-50 hover:text-foreground"
             >
               Change password
             </Link>
@@ -54,7 +55,7 @@ export default async function AppLayout({
             >
               <button
                 type="submit"
-                className="rounded-md border border-border bg-white px-3 py-2 text-sm text-muted-foreground hover:bg-zinc-50"
+                className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm hover:bg-red-50 hover:border-red-200 hover:text-red-600"
               >
                 Sign out
               </button>
@@ -62,7 +63,7 @@ export default async function AppLayout({
           </div>
         </header>
 
-        <main className="flex-1 px-5 py-6 lg:px-8">{children}</main>
+        <main className="flex-1 px-5 py-6 lg:px-8 page-enter">{children}</main>
       </div>
     </div>
   );

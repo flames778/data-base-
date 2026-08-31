@@ -2,20 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-/**
- * Lightweight edge middleware for UX-only early redirects.
- *
- * SECURITY NOTE: This middleware is NOT the security boundary. All real
- * authorization is enforced server-side in pages/route handlers via
- * `requireAuth` / `requirePermission` in `src/lib/authz.ts`. This middleware
- * only improves UX by redirecting unauthenticated visitors away from
- * protected pages before they render, and by sending users who must change
- * their password to the change-password screen.
- *
- * It checks for the presence of the NextAuth session cookie. The cookie is
- * Just-in-Time (JIT) provisioned, so issuance cannot be predicted ahead of
- * time — meaning this check cannot be forged to grant access.
- */
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
