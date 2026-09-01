@@ -139,18 +139,18 @@ export function CEOReportPanel({
                 <Button
                   size="sm"
                   variant="success"
-                  onClick={() => handleMarkCompleted("COMPLETED")}
-                  loading={busy === "COMPLETED"}
+                  onClick={() => handleMarkCompleted("APPROVED")}
+                  loading={busy === "APPROVED"}
                 >
-                  Completed
+                  Approve
                 </Button>
                 <Button
                   size="sm"
                   className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white"
-                  onClick={() => handleMarkCompleted("SUCCESS")}
-                  loading={busy === "SUCCESS"}
+                  onClick={() => handleMarkCompleted("ARCHIVED")}
+                  loading={busy === "ARCHIVED"}
                 >
-                  Success
+                  Archive
                 </Button>
               </div>
             </div>
