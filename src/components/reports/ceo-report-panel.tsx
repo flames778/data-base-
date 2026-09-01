@@ -26,7 +26,7 @@ export function CEOReportPanel({
   const [error, setError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState<string | null>(null);
 
-  async function handleMarkCompleted(status: "COMPLETED" | "SUCCESS") {
+  async function handleMarkCompleted(status: "APPROVED" | "ARCHIVED") {
     setBusy(status);
     setError(null);
     const res = await markReportCompleted({
@@ -35,7 +35,7 @@ export function CEOReportPanel({
       note: note || undefined,
     });
     if (!res.ok) {
-      setError(res.error);
+      setError((res as any).error || "Failed to mark report complete");
       setBusy(null);
       return;
     }
@@ -53,7 +53,7 @@ export function CEOReportPanel({
     setError(null);
     const res = await setReportActionRequired({ reportId, note });
     if (!res.ok) {
-      setError(res.error);
+      setError((res as any).error || "Failed to set action required");
       setBusy(null);
       return;
     }
@@ -66,7 +66,7 @@ export function CEOReportPanel({
     setError(null);
     const res = await setReportResolved({ reportId, note: note || undefined });
     if (!res.ok) {
-      setError(res.error);
+      setError((res as any).error || "Failed to mark report as resolved");
       setBusy(null);
       return;
     }

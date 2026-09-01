@@ -3,20 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/page";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Stat } from "@/components/ui/stat";
-import { getCEOReportStats, listReportsForCEO } from "@/services/ceo-reports";
 import { EmptyState } from "@/components/ui/empty-state";
-import { LinkButton } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
 const statusTone: Record<string, string> = {
   SUBMITTED: "blue",
   UNDER_REVIEW: "blue",
-  ACTION_REQUIRED: "amber",
-  RESOLVED: "emerald",
-  COMPLETED: "green",
-  SUCCESS: "green",
+  REVISION_REQUESTED: "amber",
+  APPROVED: "emerald",
+  REJECTED: "red",
+  DRAFT: "gray",
+  ARCHIVED: "slate",
 };
 
 export default async function CEOReviewPage({
@@ -24,299 +22,161 @@ export default async function CEOReviewPage({
 }: {
   searchParams: Promise<{
     status?: string;
-    department?: string;
-    template?: string;
-    author?: string;
-    fromDate?: string;
-    toDate?: string;
     page?: string;
   }>;
 }) {
   const session = await requireAuth();
-  await requirePermission("reports.complete", session);
+  await requirePermission("reports.view_all", session);
 
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.page ?? "1"));
   const pageSize = 20;
 
-  // Get stats
-  const stats = await getCEOReportStats();
+  // Get filter
+  const statusFilter = params.status;
 
-  // Get filtered reports
-  const reports = await listReportsForCEO(session, {
-    status: (params.status as any) || undefined,
-    department: params.department,
-    templateCode: params.template,
-    authorId: params.author,
-    fromDate: params.fromDate ? new Date(params.fromDate) : undefined,
-    toDate: params.toDate ? new Date(params.toDate) : undefined,
-    page,
-    pageSize,
+  // Build query
+  const where: any = {};
+  if (statusFilter && statuses.includes(statusFilter)) {
+    where.status = statusFilter;
+  }
+
+  // Get total count
+  const total = await prisma.report.count({ where });
+
+  // Get reports
+  const reports = await prisma.report.findMany({
+    where,
+    include: {
+      author: { select: { id: true, name: true } },
+      template: { select: { id: true, name: true } },
+      project: { select: { id: true, name: true } },
+    },
+    orderBy: { submittedAt: "desc" },
+    skip: (page - 1) * pageSize,
+    take: pageSize,
   });
 
-  // Get unique values for filter dropdowns
-  const templates = await prisma.reportTemplate.findMany({
-    select: { id: true, code: true, name: true },
-  });
+  // Get status counts
+  const statuses = ["SUBMITTED", "UNDER_REVIEW", "REVISION_REQUESTED", "APPROVED", "REJECTED", "ARCHIVED"];
+  const stats: Record<string, number> = {};
+  for (const s of statuses) {
+    stats[s] = await prisma.report.count({ where: { status: s } });
+  }
 
-  const authors = await prisma.user.findMany({
-    where: { role: { in: ["STAFF", "MANAGER", "TEAM_LEAD"] } },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
-
-  const departments = [
-    "MTN",
-    "Airtel",
-    "GLO",
-    "9Mobile",
-    "Admin",
-    "Finance",
-    "HR",
-    "Operations",
-  ];
+  const totalPages = Math.ceil(total / pageSize);
 
   return (
     <div>
       <PageHeader
-        title="CEO Report Review"
-        description="Review and manage company-wide reports"
+        title="Review reports"
+        description="Company-wide report oversight and status tracking"
       />
 
-      {/* Stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat
-          label="Awaiting Review"
-          value={stats.submitted}
-          tone="blue"
-        />
-        <Stat
-          label="Under Review"
-          value={stats.underReview}
-          tone="blue"
-        />
-        <Stat
-          label="Action Required"
-          value={stats.actionRequired}
-          tone="amber"
-        />
-        <Stat
-          label="Resolved"
-          value={stats.resolved}
-          tone="emerald"
-        />
+      {/* Status stats */}
+      <div className="mb-8 grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        {statuses.map((status) => (
+          <Card key={status} className="text-center">
+            <CardBody>
+              <p className="text-2xl font-bold">{stats[status]}</p>
+              <p className="text-xs text-muted-foreground">{status.replace(/_/g, " ")}</p>
+            </CardBody>
+          </Card>
+        ))}
       </div>
 
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader title="Filters" />
-        <CardBody>
-          <form method="get" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
-                Status
-              </label>
-              <select
-                name="status"
-                defaultValue={params.status ?? ""}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">All Statuses</option>
-                <option value="SUBMITTED">Awaiting Review</option>
-                <option value="UNDER_REVIEW">Under Review</option>
-                <option value="ACTION_REQUIRED">Action Required</option>
-                <option value="RESOLVED">Resolved</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="SUCCESS">Success</option>
-              </select>
-            </div>
+      {/* Status filter */}
+      <div className="mb-6 flex items-center gap-3">
+        <label className="text-sm font-medium">Filter by status:</label>
+        <form className="flex gap-2">
+          <select
+            name="status"
+            defaultValue={statusFilter || ""}
+            className="rounded border border-input bg-background px-3 py-2 text-sm"
+            onChange={(e) => {
+              const value = e.target.value ? `?status=${e.target.value}` : "";
+              window.location.href = value;
+            }}
+          >
+            <option value="">All statuses</option>
+            {statuses.map((s) => (
+              <option key={s} value={s}>
+                {s.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        </form>
+      </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
-                Department
-              </label>
-              <select
-                name="department"
-                defaultValue={params.department ?? ""}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">All Departments</option>
-                {departments.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
-                Template
-              </label>
-              <select
-                name="template"
-                defaultValue={params.template ?? ""}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">All Templates</option>
-                {templates.map((t) => (
-                  <option key={t.id} value={t.code}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
-                Author
-              </label>
-              <select
-                name="author"
-                defaultValue={params.author ?? ""}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">All Authors</option>
-                {authors.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
-                From Date
-              </label>
-              <input
-                type="date"
-                name="fromDate"
-                defaultValue={params.fromDate ?? ""}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
-                To Date
-              </label>
-              <input
-                type="date"
-                name="toDate"
-                defaultValue={params.toDate ?? ""}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-
-            <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-6">
-              <button
-                type="submit"
-                className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                Apply Filters
-              </button>
-              <a
-                href="/reports/review"
-                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Clear
-              </a>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
-
-      {/* Reports Table */}
-      <Card className="overflow-hidden rounded-[28px] border border-slate-200 bg-white/90 shadow-[0_18px_35px_rgba(15,23,42,0.04)]">
-        <CardBody className="p-0">
-          {reports.length === 0 ? (
-            <div className="px-5 py-8">
-              <EmptyState
-                title="No reports found"
-                description="No reports match the selected filters."
-              />
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50/80">
-                  <tr className="border-b border-slate-200 text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
-                    <th className="px-5 py-3 font-semibold">Report</th>
-                    <th className="px-5 py-3 font-semibold">Author</th>
-                    <th className="px-5 py-3 font-semibold">Template</th>
-                    <th className="px-5 py-3 font-semibold">Department</th>
-                    <th className="px-5 py-3 font-semibold">Status</th>
-                    <th className="px-5 py-3 font-semibold">Submitted</th>
-                    <th className="px-5 py-3 font-semibold">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {reports.map((r) => (
-                    <tr key={r.id} className="transition-colors hover:bg-slate-50/90">
-                      <td className="px-5 py-3">
-                        <a
-                          href={`/reports/${r.id}`}
-                          className="font-semibold text-blue-700 hover:text-blue-800 hover:underline"
-                        >
-                          {r.title ?? "Untitled"}
-                        </a>
-                      </td>
-                      <td className="px-5 py-3 text-slate-600">{r.author.name}</td>
-                      <td className="px-5 py-3 text-slate-600">{r.template.name}</td>
-                      <td className="px-5 py-3 text-slate-600">
-                        {r.project?.name ?? "—"}
-                      </td>
-                      <td className="px-5 py-3">
-                        <Badge tone={statusTone[r.status] ?? "gray"}>
-                          {r.status.replace(/_/g, " ")}
-                        </Badge>
-                      </td>
-                      <td className="px-5 py-3 text-slate-600 text-xs">
-                        {r.submittedAt
-                          ? new Date(r.submittedAt).toLocaleDateString()
-                          : "—"}
-                      </td>
-                      <td className="px-5 py-3">
-                        <LinkButton
-                          href={`/reports/${r.id}`}
-                          variant="secondary"
-                          size="sm"
-                        >
-                          Review
-                        </LinkButton>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardBody>
-      </Card>
+      {/* Reports table */}
+      {reports.length === 0 ? (
+        <EmptyState
+          title="No reports found"
+          description="Try adjusting your filters or check back later"
+        />
+      ) : (
+        <Card className="overflow-hidden">
+          <table className="w-full">
+            <thead className="border-b bg-muted/50">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Title</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Author</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Template</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Submitted</th>
+                <th className="px-6 py-3 text-right text-sm font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {reports.map((report) => (
+                <tr key={report.id} className="hover:bg-muted/50">
+                  <td className="px-6 py-3 text-sm font-medium">{report.title || "Untitled"}</td>
+                  <td className="px-6 py-3 text-sm">{report.author.name}</td>
+                  <td className="px-6 py-3 text-sm">{report.template.name}</td>
+                  <td className="px-6 py-3 text-sm">
+                    <Badge tone={statusTone[report.status] ?? "gray"}>
+                      {report.status.replace(/_/g, " ")}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-3 text-sm text-muted-foreground">
+                    {report.submittedAt ? new Date(report.submittedAt).toLocaleDateString() : "—"}
+                  </td>
+                  <td className="px-6 py-3 text-right">
+                    <a href={`/reports/${report.id}`} className="text-sm text-primary hover:underline">
+                      Review
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
 
       {/* Pagination */}
-      {reports.length > 0 && (
-        <div className="mt-6 flex justify-center gap-2">
-          {page > 1 && (
-            <a
-              href={`/reports/review?page=${page - 1}${params.status ? `&status=${params.status}` : ""}`}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              Previous
-            </a>
-          )}
-          <div className="flex items-center px-4 py-2 text-sm text-slate-600">
-            Page {page}
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex gap-2">
+            {page > 1 && (
+              <a
+                href={`?page=${page - 1}${statusFilter ? `&status=${statusFilter}` : ""}`}
+                className="rounded border border-input px-3 py-2 text-sm hover:bg-muted"
+              >
+                Previous
+              </a>
+            )}
+            {page < totalPages && (
+              <a
+                href={`?page=${page + 1}${statusFilter ? `&status=${statusFilter}` : ""}`}
+                className="rounded border border-input px-3 py-2 text-sm hover:bg-muted"
+              >
+                Next
+              </a>
+            )}
           </div>
-          {reports.length === pageSize && (
-            <a
-              href={`/reports/review?page=${page + 1}${params.status ? `&status=${params.status}` : ""}`}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              Next
-            </a>
-          )}
         </div>
       )}
     </div>
