@@ -47,7 +47,7 @@ export function RecognitionForm({
     });
 
     if (!res.ok) {
-      setError(res.error);
+      setError((res as any).error || "Failed to give recognition");
       setLoading(false);
       return;
     }
@@ -67,7 +67,7 @@ export function RecognitionForm({
         <p>You are awarding recognition to <strong>{authorName}</strong> for their work on this report.</p>
       </div>
 
-      <Field label="Reward Type" required>
+      <Field label="Reward Type">
         <Select
           value={formData.rewardType}
           onChange={(e) =>

@@ -149,7 +149,7 @@ export async function setReportActionRequired(input: {
     await prisma.notification.create({
       data: {
         userId: report.authorId,
-        type: "REPORT_REVISION_REQUESTED",
+        type: "REVISION_REQUESTED",
         title: "Revision Requested for Report",
         message: `CEO has requested a revision on your report "${report.title}". ${input.note}`,
         link: `/reports/${input.reportId}`,
