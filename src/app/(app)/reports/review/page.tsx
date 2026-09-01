@@ -1,5 +1,6 @@
 import { requireAuth, requirePermission } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import type { ReportStatus } from "@prisma/client";
 import { PageHeader } from "@/components/ui/page";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,15 @@ const statusTone: Record<string, string> = {
   DRAFT: "gray",
   ARCHIVED: "slate",
 };
+
+const statuses = [
+  "SUBMITTED",
+  "UNDER_REVIEW",
+  "REVISION_REQUESTED",
+  "APPROVED",
+  "REJECTED",
+  "ARCHIVED",
+] as const satisfies readonly ReportStatus[];
 
 export default async function CEOReviewPage({
   searchParams,
@@ -34,14 +44,15 @@ export default async function CEOReviewPage({
 
   // Get filter
   const statusFilter = params.status;
+  const statusFilterValues: readonly string[] = statuses;
 
   // Build query
   const where: any = {};
-  if (statusFilter && statuses.includes(statusFilter)) {
+  if (statusFilter && statusFilterValues.includes(statusFilter)) {
     where.status = statusFilter;
   }
 
-  // Get total count
+  // Get count
   const total = await prisma.report.count({ where });
 
   // Get reports
@@ -58,7 +69,6 @@ export default async function CEOReviewPage({
   });
 
   // Get status counts
-  const statuses = ["SUBMITTED", "UNDER_REVIEW", "REVISION_REQUESTED", "APPROVED", "REJECTED", "ARCHIVED"];
   const stats: Record<string, number> = {};
   for (const s of statuses) {
     stats[s] = await prisma.report.count({ where: { status: s } });

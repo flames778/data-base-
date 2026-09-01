@@ -35,7 +35,7 @@ export function UploadForm({
 
     if (res.status === 501) {
       setError(
-        "Object storage is not configured. Set MINIO_ACCESS_KEY, MINIO_SECRET_KEY and MINIO_ENDPOINT to enable uploads."
+        "Object storage is not configured. Set MINIO_ACCESS_KEY, MINIO_SECRET_KEY and MINIO_ENDPOINT (or the equivalent R2/S3 values) to enable uploads."
       );
       setBusy(false);
       return;
@@ -57,7 +57,7 @@ export function UploadForm({
 
       {!storageConfigured && (
         <div className="rounded-md border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <strong>Object storage not configured:</strong> document upload requires MinIO/S3
+          <strong>Object storage not configured:</strong> document upload requires S3-compatible storage
           credentials (see <code>.env.example</code> and <code>docker-compose.yml</code>). The
           database, versions and access controls are ready; enable storage to upload files.
         </div>

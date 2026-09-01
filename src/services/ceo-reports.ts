@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { ReportStatus } from "@prisma/client";
 import type { Session as AuthSession } from "next-auth";
 import { ForbiddenError, NotFoundError } from "@/lib/authz";
-import { createAuditLog } from "@/lib/audit";
+import { audit } from "@/lib/audit";
 
 /**
  * Mark a report as completed by the CEO.
@@ -53,11 +53,11 @@ export async function completeReport(
   });
 
   // Create audit log
-  await createAuditLog({
-    userId: session.user.id,
+  await audit.user(session.user, {
     action: "REPORT_COMPLETED",
     resource: "Report",
     resourceId: reportId,
+    result: "success",
     metadata: {
       reportTitle: report.title,
       authorName: report.author.name,
@@ -125,11 +125,11 @@ export async function giveRecognition(
   });
 
   // Create audit log
-  await createAuditLog({
-    userId: session.user.id,
+  await audit.user(session.user, {
     action: "RECOGNITION_GIVEN",
     resource: "RecognitionReward",
     resourceId: recognition.id,
+    result: "success",
     metadata: {
       recipientName: recipient.name,
       rewardType: data.rewardType,

@@ -1,7 +1,8 @@
 # Architecture
 
 Prec Pearl is a Next.js 16 (App Router) application with a PostgreSQL backend
-and S3-compatible object storage (MinIO in development).
+and S3-compatible object storage (MinIO in development, Cloudflare R2 in
+production).
 
 ## High-level flow
 
@@ -14,7 +15,7 @@ Browser ──► Next.js (App Router)
               │     └─ audit.record()                         (audit trail)
               │
               ├─ PostgreSQL  ── metadata, RBAC, reports, docs, claims, etc.
-              └─ MinIO (S3)  ── document file bytes (private bucket)
+              └─ S3 bucket (R2/MinIO) ── document file bytes (private bucket)
 ```
 
 ## Authentication
@@ -43,13 +44,14 @@ See `SECURITY.md` for the detailed security model.
 ## Object storage (documents)
 
 - **PostgreSQL** stores document metadata, versions and access-control rules.
-- **MinIO** (S3-compatible) stores the actual file bytes in a **private** bucket.
+- A **private S3-compatible bucket** (MinIO in development, Cloudflare R2 in
+  production) stores the actual file bytes.
 - All uploads/downloads are **server-side authorized** first; downloads use
   short-lived **presigned URLs** (default 5-minute expiry).
 - File type and size validation happen in the upload route
   (`src/app/api/documents/upload/route.ts`).
 
-See `src/services/storage/minio.ts`.
+See `src/services/storage/object-store.ts`.
 
 ## Key directories
 

@@ -11,7 +11,8 @@ hub, claims/issues, audit logging, notifications and search.
 - **PostgreSQL 16** via **Prisma 6**
 - **Auth.js / NextAuth v5** — first-party credential (email + password) auth,
   JWT sessions, bcrypt password hashing
-- **MinIO** — S3-compatible object storage for document file bytes
+- **S3-compatible object storage** for document file bytes (MinIO locally,
+  Cloudflare R2 in production)
 - **Vitest** for unit tests
 
 ## Getting started (local development)
@@ -70,12 +71,18 @@ a generated password is forced to set a new password at first sign-in.
 
 ## Environment
 
-See `.env.example` for the full list, including MinIO credentials and the
-optional seed password variables. Never commit real secrets.
+See `.env.example` for the full list, including object-storage credentials and
+the optional seed password variables. Never commit real secrets.
+
+## Deployment
+
+Deploy to **Vercel** with a **Supabase** Postgres database and **Cloudflare
+R2** object storage — see `DEPLOYMENT.md` for the full step-by-step, the exact
+environment variables, and the GitHub Actions migration workflow.
 
 ## Documentation
 
 - `ARCHITECTURE.md` — system design, security model, auth & storage flow
 - `DATABASE.md` — schema overview and data model
 - `SECURITY.md` — auth, passwords, RBAC, audit and object storage security
-- `DEPLOYMENT.md` — building and deploying with Docker
+- `DEPLOYMENT.md` — deploying to Vercel + Supabase + Cloudflare R2, or Docker

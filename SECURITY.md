@@ -39,14 +39,16 @@
   password-change gate). **It is not the security boundary** — every page, API
   route and server action enforces authorization server-side.
 
-## Object storage (MinIO / S3)
+## Object storage (S3-compatible: R2 / MinIO)
 
-- Files are stored only in a **private** bucket (`precpearl-private`).
+- Files are stored only in a **private** bucket (e.g. `precpearl-private`).
 - Bucket/object access is **server-side authorized** before any upload or
   download; there is no public read access to the bucket.
 - Downloads use **temporary presigned URLs** (5-minute expiry).
 - Upload validation: allowed MIME types + extensions, maximum file size (25 MB),
   empty-file rejection.
+- Provider credentials (R2 API tokens, MinIO keys) are server-only env vars;
+  they are never exposed to the browser.
 
 ## Audit
 

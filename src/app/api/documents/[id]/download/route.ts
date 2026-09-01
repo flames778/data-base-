@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { canAccessDocument } from "@/services/documents";
-import { getPresignedDownloadUrl, isStorageConfigured } from "@/services/storage/minio";
+import { getPresignedDownloadUrl, isStorageConfigured } from "@/services/storage/object-store";
 import { audit, clientInfo } from "@/lib/audit";
 import { toErrorResponse } from "@/lib/api";
 

@@ -1,0 +1,41 @@
+name: Deploy database migrations
+
+# Runs `prisma migrate deploy` against the production database whenever code
+# is merged to `main`. Vercel does NOT run migrations during its builds, so
+# this workflow is the single source of truth for schema changes hitting
+# production.
+#
+# Required GitHub repository secrets (Settings -> Secrets and variables ->
+# Actions -> New repository secret):
+#   PROD_DATABASE_URL : Supabase "Transaction pooler" URI (port 6543,
+#                       ?pgbouncer=true) — the string the app uses at runtime.
+#   PROD_DIRECT_URL   : Supabase "Direct connection" URI (port 5432) — used by
+#                       migrations, which the transaction pooler can't serve.
+#   PROD_AUTH_SECRET  : the same AUTH_SECRET value set in Vercel production.
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.PROD_DIRECT_URL }}
+      AUTH_SECRET: ${{ secrets.PROD_AUTH_SECRET }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy

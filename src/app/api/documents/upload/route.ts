@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requirePermission } from "@/lib/authz";
 import { audit, clientInfo } from "@/lib/audit";
-import { uploadObject, objectKey, isStorageConfigured } from "@/services/storage/minio";
+import { uploadObject, objectKey, isStorageConfigured, providerName } from "@/services/storage/object-store";
 import { documentSchema } from "@/lib/validation";
 import { toErrorResponse } from "@/lib/api";
 
@@ -90,10 +90,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // ---- MinIO object storage (actual bytes) ----
+    // ---- Object storage (actual file bytes) ----
     if (!isStorageConfigured()) {
       return NextResponse.json(
-        { error: "Object storage is not configured. Set MINIO_ACCESS_KEY, MINIO_SECRET_KEY and MINIO_ENDPOINT to enable uploads." },
+        { error: "Object storage is not configured. Set MINIO_ACCESS_KEY, MINIO_SECRET_KEY and MINIO_ENDPOINT (or the equivalent R2/S3 values) to enable uploads." },
         { status: 501 }
       );
     }
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
           projectId: parsedDoc.projectId ?? null,
           uploaderId: session.user.id,
           storageKey,
-          storageProvider: "minio",
+          storageProvider: providerName(),
           fileName: file.name,
           mimeType: file.type,
           fileSize: file.size,

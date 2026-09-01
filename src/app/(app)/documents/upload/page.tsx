@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/page";
 import { Card, CardBody } from "@/components/ui/card";
 import { UploadForm } from "@/components/documents/upload-form";
 import { getProjectIdsForUser } from "@/lib/dashboard";
-import { isStorageConfigured } from "@/services/storage/minio";
+import { isStorageConfigured } from "@/services/storage/object-store";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +35,7 @@ export default async function UploadDocumentPage() {
     <div className="max-w-2xl">
       <PageHeader
         title="Upload Document"
-        description="Files are stored in MinIO (S3-compatible); metadata and version history live in the platform database."
+        description="Files are stored in private S3-compatible object storage (MinIO locally, Cloudflare R2 in production); metadata and version history live in the platform database."
       />
       <Card>
         <CardBody>

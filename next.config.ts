@@ -3,8 +3,10 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Produce a standalone server bundle for containerized deployment.
-  output: "standalone",
+  // Produce a standalone server bundle for containerized (Docker) deployment.
+  // Set NEXT_OUTPUT_STANDALONE=1 in the Dockerfile. Unset on Vercel, which
+  // builds its own serverless output (standalone is ignored there anyway).
+  output: process.env.NEXT_OUTPUT_STANDALONE === "1" ? "standalone" : undefined,
 
   // Security headers applied to every response. Authorization is always
   // enforced server-side; these headers are defensive hardening.

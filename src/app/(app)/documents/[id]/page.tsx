@@ -77,7 +77,7 @@ export default async function DocumentDetailPage({
               <div className="flex justify-between py-2">
                 <span className="text-muted-foreground">Storage</span>
                 <span className="font-medium">
-                  {doc.storageKey ? "Object storage (MinIO/S3)" : "Not stored"}
+                  {doc.storageKey ? "Object storage (S3-compatible)" : "Not stored"}
                 </span>
               </div>
             </CardBody>
