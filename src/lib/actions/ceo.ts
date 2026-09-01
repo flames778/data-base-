@@ -10,7 +10,7 @@ import {
 } from "@/lib/authz";
 import { errorResult } from "@/lib/actions/util";
 import { completeReport, giveRecognition } from "@/services/ceo-reports";
-import { createAuditLog, clientInfo } from "@/lib/audit";
+import { audit, clientInfo } from "@/lib/audit";
 import { headers } from "next/headers";
 import type { ReportStatus } from "@prisma/client";
 
@@ -19,7 +19,7 @@ import type { ReportStatus } from "@prisma/client";
  */
 export async function markReportCompleted(input: {
   reportId: string;
-  status: "COMPLETED" | "SUCCESS";
+  status: "APPROVED" | "ARCHIVED";
   note?: string;
 }) {
   const session = await requireAuth();
@@ -39,7 +39,7 @@ export async function markReportCompleted(input: {
     }
 
     // Verify we can only mark reports in certain statuses as completed
-    const validStatuses = ["SUBMITTED", "UNDER_REVIEW", "RESOLVED", "ACTION_REQUIRED"];
+    const validStatuses = ["SUBMITTED", "UNDER_REVIEW", "REVISION_REQUESTED", "APPROVED"];
     if (!validStatuses.includes(report.status)) {
       return errorResult(
         `Cannot mark a ${report.status.replace(/_/g, " ")} report as completed.`
@@ -117,7 +117,6 @@ export async function setReportActionRequired(input: {
   await requirePermission("reports.view_all", session); // CEO or admin can do this
 
   const h = await headers();
-  const info = clientInfo(h);
 
   try {
     const report = await prisma.report.findUnique({
@@ -129,10 +128,10 @@ export async function setReportActionRequired(input: {
       return errorResult("Report not found.");
     }
 
-    // Update status
+    // Update status - use REVISION_REQUESTED
     const updated = await prisma.report.update({
       where: { id: input.reportId },
-      data: { status: "ACTION_REQUIRED" },
+      data: { status: "REVISION_REQUESTED" },
     });
 
     // Create status history
@@ -140,7 +139,7 @@ export async function setReportActionRequired(input: {
       data: {
         reportId: input.reportId,
         fromStatus: report.status,
-        toStatus: "ACTION_REQUIRED",
+        toStatus: "REVISION_REQUESTED",
         changedById: session.user.id,
         note: input.note,
       },
@@ -150,17 +149,16 @@ export async function setReportActionRequired(input: {
     await prisma.notification.create({
       data: {
         userId: report.authorId,
-        type: "REVISION_REQUESTED",
-        title: "Action Required on Report",
-        message: `CEO has requested action on your report "${report.title}". ${input.note}`,
+        type: "REPORT_REVISION_REQUESTED",
+        title: "Revision Requested for Report",
+        message: `CEO has requested a revision on your report "${report.title}". ${input.note}`,
         link: `/reports/${input.reportId}`,
       },
     });
 
     // Audit log
-    await createAuditLog({
-      userId: session.user.id,
-      action: "REPORT_ACTION_REQUIRED",
+    await audit.user(session.user, {
+      action: "REPORT_REVISION_REQUESTED",
       resource: "Report",
       resourceId: input.reportId,
       metadata: {
@@ -190,7 +188,6 @@ export async function setReportResolved(input: {
   await requirePermission("reports.view_all", session);
 
   const h = await headers();
-  const info = clientInfo(h);
 
   try {
     const report = await prisma.report.findUnique({
@@ -202,10 +199,10 @@ export async function setReportResolved(input: {
       return errorResult("Report not found.");
     }
 
-    // Update status
+    // Update status - use APPROVED
     await prisma.report.update({
       where: { id: input.reportId },
-      data: { status: "RESOLVED" },
+      data: { status: "APPROVED" },
     });
 
     // Create status history
@@ -213,9 +210,9 @@ export async function setReportResolved(input: {
       data: {
         reportId: input.reportId,
         fromStatus: report.status,
-        toStatus: "RESOLVED",
+        toStatus: "APPROVED",
         changedById: session.user.id,
-        note: input.note || "Issue has been resolved by CEO.",
+        note: input.note || "Report approved by CEO.",
       },
     });
 
@@ -224,16 +221,15 @@ export async function setReportResolved(input: {
       data: {
         userId: report.authorId,
         type: "REPORT_APPROVED",
-        title: "Report Marked as Resolved",
-        message: `Your report "${report.title}" has been marked as resolved.`,
+        title: "Report Approved",
+        message: `Your report "${report.title}" has been approved by the CEO.`,
         link: `/reports/${input.reportId}`,
       },
     });
 
     // Audit log
-    await createAuditLog({
-      userId: session.user.id,
-      action: "REPORT_RESOLVED",
+    await audit.user(session.user, {
+      action: "REPORT_APPROVED",
       resource: "Report",
       resourceId: input.reportId,
       metadata: {

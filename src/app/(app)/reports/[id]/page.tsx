@@ -6,8 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { ReviewPanel } from "@/components/reports/review-panel";
 import { CommentSection } from "@/components/comments/comment-section";
-import { CEOReportPanel } from "@/components/reports/ceo-report-panel";
-import { RecognitionDisplay } from "@/components/reports/recognition-display";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +17,6 @@ const statusTone: Record<string, string> = {
   REJECTED: "red",
   DRAFT: "gray",
   ARCHIVED: "slate",
-  ACTION_REQUIRED: "amber",
-  RESOLVED: "green",
-  COMPLETED: "green",
-  SUCCESS: "green",
 };
 
 export default async function ReportDetailPage({
@@ -104,10 +98,6 @@ export default async function ReportDetailPage({
             </CardBody>
           </Card>
 
-          {report.recognitions && report.recognitions.length > 0 && (
-            <RecognitionDisplay recognitions={report.recognitions} />
-          )}
-
           <Card>
             <CardBody>
               <CommentSection
@@ -124,16 +114,7 @@ export default async function ReportDetailPage({
         </div>
 
         <div className="space-y-6">
-          {isCEO && (
-            <Card>
-              <CardHeader title="CEO Review" />
-              <CardBody>
-                <CEOReportPanel reportId={report.id} authorId={report.authorId} currentStatus={report.status} />
-              </CardBody>
-            </Card>
-          )}
-
-          {canReview && !isCEO && (
+          {canReview && (
             <Card>
               <CardHeader title="Review" />
               <CardBody>
