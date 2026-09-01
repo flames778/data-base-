@@ -13,8 +13,6 @@ import type { ReportStatus } from "@prisma/client";
 
 export function CEOReportPanel({
   reportId,
-  authorId,
-  currentStatus,
 }: {
   reportId: string;
   authorId: string;
@@ -35,7 +33,7 @@ export function CEOReportPanel({
       note: note || undefined,
     });
     if (!res.ok) {
-      setError((res as any).error || "Failed to mark report complete");
+      setError(res.error || "Failed to mark report complete");
       setBusy(null);
       return;
     }
@@ -53,7 +51,7 @@ export function CEOReportPanel({
     setError(null);
     const res = await setReportActionRequired({ reportId, note });
     if (!res.ok) {
-      setError((res as any).error || "Failed to set action required");
+      setError(res.error || "Failed to set action required");
       setBusy(null);
       return;
     }
@@ -66,7 +64,7 @@ export function CEOReportPanel({
     setError(null);
     const res = await setReportResolved({ reportId, note: note || undefined });
     if (!res.ok) {
-      setError((res as any).error || "Failed to mark report as resolved");
+      setError(res.error || "Failed to mark report as resolved");
       setBusy(null);
       return;
     }

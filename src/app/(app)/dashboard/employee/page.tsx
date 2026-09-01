@@ -111,7 +111,7 @@ export default async function EmployeeDashboard() {
                           {r.rewardType.replace(/_/g, " ")}
                         </p>
                         {r.message && (
-                          <p className="text-xs text-slate-600 mt-1">"{r.message}"</p>
+                          <p className="text-xs text-slate-600 mt-1">&ldquo;{r.message}&rdquo;</p>
                         )}
                         <p className="text-xs text-slate-500 mt-1">
                           by {r.givenBy?.name || "Unknown"} • {new Date(r.createdAt).toLocaleDateString()}

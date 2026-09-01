@@ -35,7 +35,6 @@ export default async function ReportDetailPage({
       session.user.permissions.includes("reports.review")) &&
     report.authorId !== session.user.id;
   const canEdit = report.authorId === session.user.id;
-  const isCEO = session.user.permissions.includes("reports.complete");
 
   const fieldValues: Record<string, string> = {};
   for (const fv of report.fieldValues) fieldValues[fv.fieldKey] = fv.value ?? "";

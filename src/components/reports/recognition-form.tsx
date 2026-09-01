@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { giveStaffRecognition } from "@/lib/actions/ceo";
 import { Button } from "@/components/ui/button";
-import { Input, Field, Textarea, Select } from "@/components/ui/form";
-import type { ReportStatus } from "@prisma/client";
+import { Field, Textarea, Select } from "@/components/ui/form";
 
 const REWARD_TYPES = [
   { value: "excellent_work", label: "Excellent Work" },
@@ -47,7 +46,7 @@ export function RecognitionForm({
     });
 
     if (!res.ok) {
-      setError((res as any).error || "Failed to give recognition");
+      setError(res.error || "Failed to give recognition");
       setLoading(false);
       return;
     }

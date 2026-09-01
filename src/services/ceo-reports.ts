@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { ReportStatus } from "@prisma/client";
+import type { Prisma, ReportStatus } from "@prisma/client";
 import type { Session as AuthSession } from "next-auth";
 import { ForbiddenError, NotFoundError } from "@/lib/authz";
 import { audit } from "@/lib/audit";
@@ -156,9 +156,6 @@ export async function giveRecognition(
  * Get CEO-specific report statistics.
  */
 export async function getCEOReportStats() {
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
   const [
     awaitingReview,
     underReview,
@@ -228,7 +225,7 @@ export async function listReportsForCEO(filters: {
   limit?: number;
   offset?: number;
 }) {
-  const where: Record<string, any> = {};
+  const where: Prisma.ReportWhereInput = {};
 
   if (filters.status) where.status = filters.status;
   if (filters.authorId) where.authorId = filters.authorId;

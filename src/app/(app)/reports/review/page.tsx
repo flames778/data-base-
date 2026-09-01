@@ -1,8 +1,8 @@
 import { requireAuth, requirePermission } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
-import type { ReportStatus } from "@prisma/client";
+import type { Prisma, ReportStatus } from "@prisma/client";
 import { PageHeader } from "@/components/ui/page";
-import { Card, CardHeader, CardBody } from "@/components/ui/card";
+import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -47,9 +47,9 @@ export default async function CEOReviewPage({
   const statusFilterValues: readonly string[] = statuses;
 
   // Build query
-  const where: any = {};
+  const where: Prisma.ReportWhereInput = {};
   if (statusFilter && statusFilterValues.includes(statusFilter)) {
-    where.status = statusFilter;
+    where.status = statusFilter as ReportStatus;
   }
 
   // Get count

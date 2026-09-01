@@ -2,17 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import {
-  requireAuth,
-  requirePermission,
-  ForbiddenError,
-  NotFoundError,
-} from "@/lib/authz";
+import { requireAuth, requirePermission } from "@/lib/authz";
 import { errorResult } from "@/lib/actions/util";
 import { completeReport, giveRecognition } from "@/services/ceo-reports";
-import { audit, clientInfo } from "@/lib/audit";
-import { headers } from "next/headers";
-import type { ReportStatus } from "@prisma/client";
+import { audit } from "@/lib/audit";
 
 /**
  * Mark a report as completed by the CEO.
@@ -21,12 +14,9 @@ export async function markReportCompleted(input: {
   reportId: string;
   status: "APPROVED" | "ARCHIVED";
   note?: string;
-}) {
+}): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await requireAuth();
   await requirePermission("reports.complete", session);
-
-  const h = await headers();
-  const info = clientInfo(h);
 
   try {
     const report = await prisma.report.findUnique({
@@ -66,12 +56,12 @@ export async function giveStaffRecognition(input: {
   reportId?: string;
   rewardType: string;
   message?: string;
-}) {
+}): Promise<
+  | { ok: true; recognitionId: string }
+  | { ok: false; error: string }
+> {
   const session = await requireAuth();
   await requirePermission("staff.recognize", session);
-
-  const h = await headers();
-  const info = clientInfo(h);
 
   try {
     if (!input.recipientId || !input.rewardType) {
@@ -112,11 +102,9 @@ export async function giveStaffRecognition(input: {
 export async function setReportActionRequired(input: {
   reportId: string;
   note: string;
-}) {
+}): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await requireAuth();
   await requirePermission("reports.view_all", session); // CEO or admin can do this
-
-  const h = await headers();
 
   try {
     const report = await prisma.report.findUnique({
@@ -129,7 +117,7 @@ export async function setReportActionRequired(input: {
     }
 
     // Update status - use REVISION_REQUESTED
-    const updated = await prisma.report.update({
+    await prisma.report.update({
       where: { id: input.reportId },
       data: { status: "REVISION_REQUESTED" },
     });
@@ -183,11 +171,9 @@ export async function setReportActionRequired(input: {
 export async function setReportResolved(input: {
   reportId: string;
   note?: string;
-}) {
+}): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await requireAuth();
   await requirePermission("reports.view_all", session);
-
-  const h = await headers();
 
   try {
     const report = await prisma.report.findUnique({
