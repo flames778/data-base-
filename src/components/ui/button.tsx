@@ -2,17 +2,17 @@ import Link from "next/link";
 import type { ButtonHTMLAttributes, AnchorHTMLAttributes, ReactNode } from "react";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold tracking-[0.01em] transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100 disabled:opacity-60 disabled:pointer-events-none active:translate-y-0.5";
 
 const variants: Record<string, string> = {
-  primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
+  primary: "bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 text-white shadow-[0_12px_24px_rgba(37,99,235,0.28)] hover:-translate-y-0.5 hover:shadow-[0_16px_28px_rgba(37,99,235,0.35)]",
   secondary:
-    "bg-white text-foreground border border-border hover:bg-zinc-50",
+    "bg-white text-slate-700 border border-sky-200 shadow-sm hover:border-sky-300 hover:bg-sky-50",
   outline:
-    "bg-transparent text-foreground border border-border hover:bg-zinc-50",
-  ghost: "bg-transparent hover:bg-accent text-accent-foreground",
-  danger: "bg-danger text-white hover:bg-red-700",
-  success: "bg-success text-white hover:bg-green-700",
+    "bg-transparent text-slate-700 border border-slate-200 hover:bg-slate-50",
+  ghost: "bg-transparent hover:bg-blue-50 text-blue-700",
+  danger: "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-[0_12px_24px_rgba(239,68,68,0.25)] hover:-translate-y-0.5 hover:shadow-[0_16px_28px_rgba(239,68,68,0.30)]",
+  success: "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-[0_12px_24px_rgba(16,185,129,0.22)] hover:-translate-y-0.5 hover:shadow-[0_16px_28px_rgba(16,185,129,0.30)]",
 };
 
 const sizes: Record<string, string> = {

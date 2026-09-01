@@ -40,9 +40,9 @@ export function ChangePasswordForm() {
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white p-8 shadow-2xl">
-      <h2 className="text-lg font-semibold text-slate-900">Change your password</h2>
-      <p className="mt-1 text-sm text-slate-500">
+    <div className="rounded-[28px] border border-white/15 bg-white/95 p-7 shadow-[0_25px_70px_rgba(15,23,42,0.45)] backdrop-blur-sm">
+      <h2 className="text-[18px] font-semibold tracking-tight text-slate-900">Change your password</h2>
+      <p className="mt-1.5 text-sm leading-6 text-slate-500">
         For security, you must set a new password before continuing. Your new password
         must be at least 8 characters.
       </p>
@@ -50,7 +50,7 @@ export function ChangePasswordForm() {
       {error && (
         <div
           role="alert"
-          className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 shadow-sm"
         >
           {error}
         </div>
@@ -58,7 +58,7 @@ export function ChangePasswordForm() {
       {success && (
         <div
           role="status"
-          className="mt-4 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+          className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 shadow-sm"
         >
           Password updated. Redirecting…
         </div>
@@ -71,7 +71,7 @@ export function ChangePasswordForm() {
         <Field label="New password">
           <Input type="password" name="newPassword" required minLength={8} autoComplete="new-password" />
         </Field>
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-1">
           <Button type="submit" loading={busy}>Update password</Button>
         </div>
       </form>

@@ -39,13 +39,13 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   if (done) {
     return (
-      <div className="rounded-xl border border-white/10 bg-white p-8 shadow-2xl">
-        <h2 className="text-lg font-semibold text-slate-900">Password updated</h2>
-        <p className="mt-2 text-sm text-slate-600">
+      <div className="rounded-[28px] border border-white/15 bg-white/95 p-7 shadow-[0_25px_70px_rgba(15,23,42,0.45)] backdrop-blur-sm">
+        <h2 className="text-[18px] font-semibold tracking-tight text-slate-900">Password updated</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
           Your password has been changed. You can now sign in with your new password.
         </p>
         <div className="mt-5 text-sm">
-          <Link href="/login" className="font-medium text-blue-600 hover:underline">
+          <Link href="/login" className="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
             Go to sign in
           </Link>
         </div>
@@ -54,16 +54,16 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white p-8 shadow-2xl">
-      <h2 className="text-lg font-semibold text-slate-900">Choose a new password</h2>
-      <p className="mt-1 text-sm text-slate-500">
+    <div className="rounded-[28px] border border-white/15 bg-white/95 p-7 shadow-[0_25px_70px_rgba(15,23,42,0.45)] backdrop-blur-sm">
+      <h2 className="text-[18px] font-semibold tracking-tight text-slate-900">Choose a new password</h2>
+      <p className="mt-1.5 text-sm leading-6 text-slate-500">
         Your new password must be at least 8 characters.
       </p>
 
       {error && (
         <div
           role="alert"
-          className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 shadow-sm"
         >
           {error}
         </div>
@@ -76,7 +76,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <Field label="Confirm new password">
           <Input type="password" name="confirm" required minLength={8} autoComplete="new-password" />
         </Field>
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-1">
           <Button type="submit" loading={busy}>Update password</Button>
         </div>
       </form>

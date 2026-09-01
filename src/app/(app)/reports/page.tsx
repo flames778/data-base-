@@ -42,15 +42,15 @@ export default async function ReportsPage({
         actions={<LinkButton href="/reports/new">Submit Report</LinkButton>}
       />
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap gap-2">
         {(["all", "DRAFT", "SUBMITTED", "UNDER_REVIEW", "REVISION_REQUESTED", "APPROVED", "REJECTED"] as const).map((s) => (
           <a
             key={s}
             href={`/reports${s === "all" ? "" : `?status=${s}`}`}
-            className={`rounded-full border px-3 py-1 text-xs font-medium ${
+            className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${
               statusFilter === s
-                ? "border-primary bg-primary text-white"
-                : "border-border bg-white text-muted-foreground hover:bg-zinc-50"
+                ? "border-blue-600 bg-blue-600 text-white shadow-[0_10px_20px_rgba(37,99,235,0.25)]"
+                : "border-slate-200 bg-white text-slate-600 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
             }`}
           >
             {s === "all" ? "All" : s.replace(/_/g, " ")}
@@ -58,7 +58,7 @@ export default async function ReportsPage({
         ))}
       </div>
 
-      <Card>
+      <Card className="overflow-hidden rounded-[28px] border border-slate-200 bg-white/90 shadow-[0_18px_35px_rgba(15,23,42,0.04)]">
         <CardBody className="p-0">
           {reports.length === 0 ? (
             <div className="px-5 py-4">
@@ -71,31 +71,31 @@ export default async function ReportsPage({
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
-                    <th className="px-5 py-3 font-medium">Report</th>
-                    <th className="px-5 py-3 font-medium">Author</th>
-                    <th className="px-5 py-3 font-medium">Template</th>
-                    <th className="px-5 py-3 font-medium">Project</th>
-                    <th className="px-5 py-3 font-medium">Status</th>
-                    <th className="px-5 py-3 font-medium">Submitted</th>
+                <thead className="bg-slate-50/80">
+                  <tr className="border-b border-slate-200 text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
+                    <th className="px-5 py-3 font-semibold">Report</th>
+                    <th className="px-5 py-3 font-semibold">Author</th>
+                    <th className="px-5 py-3 font-semibold">Template</th>
+                    <th className="px-5 py-3 font-semibold">Project</th>
+                    <th className="px-5 py-3 font-semibold">Status</th>
+                    <th className="px-5 py-3 font-semibold">Submitted</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-slate-200">
                   {reports.map((r) => (
-                    <tr key={r.id} className="hover:bg-zinc-50">
+                    <tr key={r.id} className="transition-colors hover:bg-slate-50/90">
                       <td className="px-5 py-3">
-                        <a href={`/reports/${r.id}`} className="font-medium text-primary hover:underline">
+                        <a href={`/reports/${r.id}`} className="font-semibold text-blue-700 hover:text-blue-800 hover:underline">
                           {r.title ?? "Untitled"}
                         </a>
                       </td>
-                      <td className="px-5 py-3 text-muted-foreground">{r.author.name}</td>
-                      <td className="px-5 py-3">{r.template.name}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{r.project?.name ?? "—"}</td>
+                      <td className="px-5 py-3 text-slate-600">{r.author.name}</td>
+                      <td className="px-5 py-3 text-slate-600">{r.template.name}</td>
+                      <td className="px-5 py-3 text-slate-600">{r.project?.name ?? "—"}</td>
                       <td className="px-5 py-3">
                         <Badge tone={statusTone[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge>
                       </td>
-                      <td className="px-5 py-3 text-muted-foreground">
+                      <td className="px-5 py-3 text-slate-600">
                         {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : "—"}
                       </td>
                     </tr>

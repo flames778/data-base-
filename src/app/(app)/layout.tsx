@@ -28,9 +28,10 @@ export default async function AppLayout({
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top header */}
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-border bg-white/95 px-6 py-3 backdrop-blur-md lg:px-8">
-          <div className="hidden lg:block">
-            <p className="text-[13px] font-medium text-muted-foreground">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-sky-200/80 bg-white/85 px-5 py-3 shadow-sm shadow-sky-100/70 backdrop-blur-xl lg:px-8">
+          <div className="hidden lg:flex items-center gap-3">
+            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.95)]" />
+            <p className="text-[13px] font-medium text-slate-600">
               {new Date().toLocaleDateString("en-GB", {
                 weekday: "long",
                 day: "numeric",
@@ -39,10 +40,10 @@ export default async function AppLayout({
               })}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Link
               href="/change-password"
-              className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm hover:border-border hover:bg-zinc-50 hover:text-foreground"
+              className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-100"
             >
               Change password
             </Link>
@@ -55,7 +56,7 @@ export default async function AppLayout({
             >
               <button
                 type="submit"
-                className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-100 hover:text-red-700"
               >
                 Sign out
               </button>

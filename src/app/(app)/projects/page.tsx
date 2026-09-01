@@ -35,7 +35,7 @@ export default async function ProjectsPage() {
         }
       />
 
-      <Card>
+      <Card className="overflow-hidden rounded-[28px] border border-slate-200 bg-white/90 shadow-[0_18px_35px_rgba(15,23,42,0.04)]">
         <CardBody className="p-0">
           {projects.length === 0 ? (
             <div className="px-5 py-4">
@@ -44,34 +44,34 @@ export default async function ProjectsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
-                    <th className="px-5 py-3 font-medium">Project</th>
-                    <th className="px-5 py-3 font-medium">Lead</th>
-                    <th className="px-5 py-3 font-medium">Team</th>
-                    <th className="px-5 py-3 font-medium">Status</th>
-                    <th className="px-5 py-3 font-medium">Members</th>
-                    <th className="px-5 py-3 font-medium">Reports</th>
-                    <th className="px-5 py-3 font-medium">Ends</th>
+                <thead className="bg-slate-50/80">
+                  <tr className="border-b border-slate-200 text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
+                    <th className="px-5 py-3 font-semibold">Project</th>
+                    <th className="px-5 py-3 font-semibold">Lead</th>
+                    <th className="px-5 py-3 font-semibold">Team</th>
+                    <th className="px-5 py-3 font-semibold">Status</th>
+                    <th className="px-5 py-3 font-semibold">Members</th>
+                    <th className="px-5 py-3 font-semibold">Reports</th>
+                    <th className="px-5 py-3 font-semibold">Ends</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-slate-200">
                   {projects.map((p) => (
-                    <tr key={p.id} className="hover:bg-zinc-50">
+                    <tr key={p.id} className="transition-colors hover:bg-slate-50/90">
                       <td className="px-5 py-3">
-                        <a href={`/projects/${p.id}`} className="font-medium text-primary hover:underline">
+                        <a href={`/projects/${p.id}`} className="font-semibold text-blue-700 hover:text-blue-800 hover:underline">
                           {p.name}
                         </a>
-                        {p.client && <span className="block text-xs text-muted-foreground">{p.client}</span>}
+                        {p.client && <span className="mt-1 block text-xs text-slate-500">{p.client}</span>}
                       </td>
-                      <td className="px-5 py-3 text-muted-foreground">{p.lead?.name ?? "—"}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{p.team?.name ?? "—"}</td>
+                      <td className="px-5 py-3 text-slate-600">{p.lead?.name ?? "—"}</td>
+                      <td className="px-5 py-3 text-slate-600">{p.team?.name ?? "—"}</td>
                       <td className="px-5 py-3">
                         <Badge tone={statusTone[p.status] ?? "gray"}>{p.status.replace(/_/g, " ")}</Badge>
                       </td>
-                      <td className="px-5 py-3 text-muted-foreground">{p._count.members}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{p._count.reports}</td>
-                      <td className="px-5 py-3 text-muted-foreground">
+                      <td className="px-5 py-3 text-slate-600">{p._count.members}</td>
+                      <td className="px-5 py-3 text-slate-600">{p._count.reports}</td>
+                      <td className="px-5 py-3 text-slate-600">
                         {p.endDate ? new Date(p.endDate).toLocaleDateString() : "—"}
                       </td>
                     </tr>

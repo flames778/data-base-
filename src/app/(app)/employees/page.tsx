@@ -22,7 +22,7 @@ export default async function EmployeesPage() {
     <div>
       <PageHeader title="Employees" description="All registered employees." />
 
-      <Card>
+      <Card className="overflow-hidden rounded-[28px] border border-slate-200 bg-white/90 shadow-[0_18px_35px_rgba(15,23,42,0.04)]">
         <CardBody className="p-0">
           {users.length === 0 ? (
             <div className="px-5 py-4">
@@ -31,23 +31,23 @@ export default async function EmployeesPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
-                    <th className="px-5 py-3 font-medium">Employee</th>
-                    <th className="px-5 py-3 font-medium">Department</th>
-                    <th className="px-5 py-3 font-medium">Role</th>
-                    <th className="px-5 py-3 font-medium">Status</th>
-                    <th className="px-5 py-3 font-medium">Last login</th>
+                <thead className="bg-slate-50/80">
+                  <tr className="border-b border-slate-200 text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
+                    <th className="px-5 py-3 font-semibold">Employee</th>
+                    <th className="px-5 py-3 font-semibold">Department</th>
+                    <th className="px-5 py-3 font-semibold">Role</th>
+                    <th className="px-5 py-3 font-semibold">Status</th>
+                    <th className="px-5 py-3 font-semibold">Last login</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-slate-200">
                   {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-zinc-50">
+                    <tr key={u.id} className="transition-colors hover:bg-slate-50/90">
                       <td className="px-5 py-3">
-                        <p className="font-medium">{u.name}</p>
-                        <p className="text-xs text-muted-foreground">{u.email}</p>
+                        <p className="font-semibold text-slate-900">{u.name}</p>
+                        <p className="text-xs text-slate-500">{u.email}</p>
                       </td>
-                      <td className="px-5 py-3 text-muted-foreground">{u.department ?? "—"}</td>
+                      <td className="px-5 py-3 text-slate-600">{u.department ?? "—"}</td>
                       <td className="px-5 py-3">
                         <Badge tone={u.role.name === "CEO" ? "purple" : u.role.name === "ADMIN" ? "red" : u.role.name === "PROJECT_LEAD" ? "blue" : "slate"}>
                           {u.role.displayName}
@@ -56,7 +56,7 @@ export default async function EmployeesPage() {
                       <td className="px-5 py-3">
                         <Badge tone={u.status === "ACTIVE" ? "green" : "red"}>{u.status}</Badge>
                       </td>
-                      <td className="px-5 py-3 text-muted-foreground">
+                      <td className="px-5 py-3 text-slate-600">
                         {u.lastLogin ? new Date(u.lastLogin).toLocaleString() : "Never"}
                       </td>
                     </tr>

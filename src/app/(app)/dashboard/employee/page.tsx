@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/authz";
 import { getEmployeeDashboard } from "@/lib/dashboard";
+import { getUserRecognitions } from "@/services/ceo-reports";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page";
 import { StatCard } from "@/components/ui/stat-card";
@@ -21,6 +22,7 @@ const statusTone: Record<string, string> = {
 export default async function EmployeeDashboard() {
   const session = await requireAuth();
   const data = await getEmployeeDashboard(session);
+  const recognitions = await getUserRecognitions(session.user.id);
 
   return (
     <div>
@@ -39,7 +41,7 @@ export default async function EmployeeDashboard() {
         <StatCard label="Active issues" value={data.myActiveIssues} tone="green" />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <Card>
           <CardHeader
             title="My recent reports"
@@ -93,6 +95,38 @@ export default async function EmployeeDashboard() {
           </CardBody>
         </Card>
 
+        <Card>
+          <CardHeader title="🏆 My Recognition & Awards" />
+          <CardBody>
+            {recognitions.length === 0 ? (
+              <EmptyState title="No awards yet." description="Keep doing great work!" />
+            ) : (
+              <ul className="divide-y divide-border">
+                {recognitions.slice(0, 5).map((r) => (
+                  <li key={r.id} className="py-3">
+                    <div className="flex items-start gap-3">
+                      <div className="text-lg">🏅</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900">
+                          {r.rewardType.replace(/_/g, " ")}
+                        </p>
+                        {r.message && (
+                          <p className="text-xs text-slate-600 mt-1">"{r.message}"</p>
+                        )}
+                        <p className="text-xs text-slate-500 mt-1">
+                          by {r.givenBy?.name || "Unknown"} • {new Date(r.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader
             title="My issues & challenges"

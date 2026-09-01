@@ -101,7 +101,7 @@ export function SidebarNav({
   const roleLabel = userRole.replace(/_/g, " ").toLowerCase();
 
   const nav = (
-    <nav className="flex-1 space-y-0.5 px-3 py-4">
+    <nav className="flex-1 space-y-1.5 px-3 py-4">
       {links.map((l) => (
         <Link
           key={l.href}
@@ -109,10 +109,10 @@ export function SidebarNav({
           onClick={() => setOpen(false)}
           className={`sidebar-link${isActive(l) ? " active" : ""}`}
         >
-          <span className={isActive(l) ? "text-blue-400" : ""}><NavIcon href={l.href} /></span>
+          <span className={isActive(l) ? "text-blue-300" : "text-slate-300/80"}><NavIcon href={l.href} /></span>
           <span className="flex-1 truncate">{l.label}</span>
           {l.href !== "/search" && unreadCount > 0 && l.label === "Notifications" ? (
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-400 text-[10px] font-bold text-white shadow-lg shadow-blue-500/30">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           ) : null}
@@ -122,14 +122,14 @@ export function SidebarNav({
   );
 
   const userFooter = (
-    <div className="border-t border-white/[0.07] px-4 py-3">
-      <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300 ring-1 ring-blue-400/30">
+    <div className="border-t border-white/10 px-4 py-4">
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 shadow-inner shadow-blue-900/10">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 text-xs font-semibold text-slate-950 ring-2 ring-white/20">
           {initials}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white/90">{userName}</p>
-          <p className="truncate text-[11px] capitalize text-white/40">{roleLabel}</p>
+          <p className="truncate text-sm font-semibold text-white/95">{userName}</p>
+          <p className="truncate text-[11px] capitalize text-slate-300">{roleLabel}</p>
         </div>
       </div>
     </div>
@@ -137,14 +137,14 @@ export function SidebarNav({
 
   const logo = (
     <div className="flex items-center gap-3 px-5 py-[18px]">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500 text-white shadow-md">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/35 ring-1 ring-white/20">
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       </div>
       <div>
-        <p className="text-sm font-bold text-white tracking-tight">Prec Pearl</p>
-        <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest">Operations</p>
+        <p className="text-sm font-bold tracking-tight text-white">Prec Pearl</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.23em] text-sky-200/80">Operations</p>
       </div>
     </div>
   );
@@ -152,9 +152,9 @@ export function SidebarNav({
   return (
     <>
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-white px-4 py-3 lg:hidden">
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-[#0f1e35]">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-sky-200/70 bg-white/90 px-4 py-3 shadow-sm shadow-slate-200/40 backdrop-blur-xl lg:hidden">
+        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-slate-900">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-sky-400 text-white shadow-md shadow-blue-500/30">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
             </svg>
@@ -163,7 +163,7 @@ export function SidebarNav({
         </Link>
         <button
           onClick={() => setOpen((o) => !o)}
-          className="rounded-lg border border-border p-2 text-foreground hover:bg-zinc-50"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-100"
           aria-label="Toggle navigation"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -179,12 +179,12 @@ export function SidebarNav({
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <aside className="absolute left-0 top-0 h-full w-64 flex flex-col" style={{ background: 'var(--sidebar-bg)' }}>
+          <aside className="absolute left-0 top-0 h-full w-64 flex flex-col shadow-2xl" style={{ background: 'var(--sidebar-bg)' }}>
             {logo}
-            <div className="h-px bg-white/[0.07]" />
+            <div className="h-px bg-white/[0.08]" />
             {nav}
             {userFooter}
           </aside>
@@ -192,9 +192,9 @@ export function SidebarNav({
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-60 shrink-0 lg:flex lg:flex-col" style={{ background: 'var(--sidebar-bg)' }}>
+      <aside className="hidden w-64 shrink-0 lg:flex lg:flex-col shadow-xl shadow-slate-200/80" style={{ background: 'var(--sidebar-bg)' }}>
         {logo}
-        <div className="h-px bg-white/[0.07]" />
+        <div className="h-px bg-white/[0.08]" />
         {nav}
         {userFooter}
       </aside>

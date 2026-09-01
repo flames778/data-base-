@@ -21,6 +21,8 @@ export type PermissionKey =
   | "reports.view_all"
   | "reports.manage"
   | "reports.manage_templates"
+  | "reports.complete"
+  | "reports.ceo_review"
   // Documents
   | "documents.view"
   | "documents.upload"
@@ -53,6 +55,8 @@ export type PermissionKey =
   | "claims.create"
   | "claims.review"
   | "claims.manage"
+  // Recognition
+  | "staff.recognize"
   // Dashboard visibility
   | "dashboard.ceo"
   | "dashboard.admin"
@@ -74,6 +78,8 @@ export const PERMISSIONS: PermissionDef[] = [
   { key: "reports.view_all", name: "View all reports" },
   { key: "reports.manage", name: "Manage reports" },
   { key: "reports.manage_templates", name: "Manage report templates" },
+  { key: "reports.complete", name: "Mark reports as completed" },
+  { key: "reports.ceo_review", name: "CEO report review dashboard" },
 
   // Documents
   { key: "documents.view", name: "View documents" },
@@ -115,6 +121,9 @@ export const PERMISSIONS: PermissionDef[] = [
   { key: "claims.review", name: "Review claims" },
   { key: "claims.manage", name: "Manage claims" },
 
+  // Recognition
+  { key: "staff.recognize", name: "Give staff recognition/rewards" },
+
   // Dashboard visibility
   { key: "dashboard.ceo", name: "CEO executive dashboard" },
   { key: "dashboard.admin", name: "Admin dashboard" },
@@ -126,6 +135,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, PermissionKey[]> = {
     "reports.view",
     "reports.view_all",
     "reports.manage_templates",
+    "reports.complete",
+    "reports.ceo_review",
     "documents.view",
     "documents.upload",
     "documents.download",
@@ -144,6 +155,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, PermissionKey[]> = {
     "issues.assign",
     "claims.create",
     "claims.manage",
+    "staff.recognize",
     "dashboard.ceo",
   ],
   ADMIN: [

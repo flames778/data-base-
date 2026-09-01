@@ -92,6 +92,8 @@ export async function getAuthorizedReport(session: AuthSession, reportId: string
         orderBy: { createdAt: "asc" },
         include: { author: { select: { name: true } } },
       },
+      completedBy: { select: { name: true } },
+      recognitions: { include: { givenBy: { select: { name: true } } } },
     },
   });
   if (!report) throw new NotFoundError();
@@ -110,10 +112,14 @@ export async function getAuthorizedReport(session: AuthSession, reportId: string
 export const ALLOWED_TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {
   DRAFT: ["SUBMITTED", "ARCHIVED"],
   SUBMITTED: ["UNDER_REVIEW", "APPROVED", "REJECTED", "REVISION_REQUESTED", "ARCHIVED"],
-  UNDER_REVIEW: ["APPROVED", "REJECTED", "REVISION_REQUESTED", "ARCHIVED"],
+  UNDER_REVIEW: ["APPROVED", "REJECTED", "REVISION_REQUESTED", "ACTION_REQUIRED", "RESOLVED", "COMPLETED", "SUCCESS", "ARCHIVED"],
   REVISION_REQUESTED: ["SUBMITTED", "ARCHIVED"],
   APPROVED: ["ARCHIVED"],
   REJECTED: ["ARCHIVED"],
+  ACTION_REQUIRED: ["SUBMITTED", "RESOLVED", "COMPLETED", "SUCCESS", "ARCHIVED"],
+  RESOLVED: ["COMPLETED", "SUCCESS", "ARCHIVED"],
+  COMPLETED: ["SUCCESS", "ARCHIVED"],
+  SUCCESS: ["ARCHIVED"],
   ARCHIVED: [],
 };
 

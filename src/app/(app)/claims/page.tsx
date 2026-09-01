@@ -30,7 +30,7 @@ export default async function ClaimsListPage() {
         actions={<LinkButton href="/claims/new">New Claim</LinkButton>}
       />
 
-      <Card>
+      <Card className="overflow-hidden rounded-[28px] border border-slate-200 bg-white/90 shadow-[0_18px_35px_rgba(15,23,42,0.04)]">
         <CardBody className="p-0">
           {claims.length === 0 ? (
             <div className="px-5 py-4">
@@ -39,27 +39,27 @@ export default async function ClaimsListPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
-                    <th className="px-5 py-3 font-medium">Claim</th>
-                    <th className="px-5 py-3 font-medium">Applicant</th>
-                    <th className="px-5 py-3 font-medium">Type</th>
-                    <th className="px-5 py-3 font-medium">Amount</th>
-                    <th className="px-5 py-3 font-medium">Status</th>
-                    <th className="px-5 py-3 font-medium">Submitted</th>
+                <thead className="bg-slate-50/80">
+                  <tr className="border-b border-slate-200 text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
+                    <th className="px-5 py-3 font-semibold">Claim</th>
+                    <th className="px-5 py-3 font-semibold">Applicant</th>
+                    <th className="px-5 py-3 font-semibold">Type</th>
+                    <th className="px-5 py-3 font-semibold">Amount</th>
+                    <th className="px-5 py-3 font-semibold">Status</th>
+                    <th className="px-5 py-3 font-semibold">Submitted</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-slate-200">
                   {claims.map((c) => (
-                    <tr key={c.id} className="hover:bg-zinc-50">
+                    <tr key={c.id} className="transition-colors hover:bg-slate-50/90">
                       <td className="px-5 py-3">
-                        <a href={`/claims/${c.id}`} className="font-medium text-primary hover:underline">{c.title}</a>
+                        <a href={`/claims/${c.id}`} className="font-semibold text-blue-700 hover:text-blue-800 hover:underline">{c.title}</a>
                       </td>
-                      <td className="px-5 py-3 text-muted-foreground">{c.applicant.name}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{c.claimType}</td>
-                      <td className="px-5 py-3">{c.amount != null ? `$${Number(c.amount).toFixed(2)}` : "—"}</td>
+                      <td className="px-5 py-3 text-slate-600">{c.applicant.name}</td>
+                      <td className="px-5 py-3 text-slate-600">{c.claimType}</td>
+                      <td className="px-5 py-3 text-slate-700">{c.amount != null ? `$${Number(c.amount).toFixed(2)}` : "—"}</td>
                       <td className="px-5 py-3"><Badge tone={statusTone[c.status] ?? "gray"}>{c.status.replace(/_/g, " ")}</Badge></td>
-                      <td className="px-5 py-3 text-muted-foreground">{new Date(c.createdAt).toLocaleDateString()}</td>
+                      <td className="px-5 py-3 text-slate-600">{new Date(c.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>

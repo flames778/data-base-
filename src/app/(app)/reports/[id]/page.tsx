@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { ReviewPanel } from "@/components/reports/review-panel";
 import { CommentSection } from "@/components/comments/comment-section";
+import { CEOReportPanel } from "@/components/reports/ceo-report-panel";
+import { RecognitionDisplay } from "@/components/reports/recognition-display";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,10 @@ const statusTone: Record<string, string> = {
   REJECTED: "red",
   DRAFT: "gray",
   ARCHIVED: "slate",
+  ACTION_REQUIRED: "amber",
+  RESOLVED: "green",
+  COMPLETED: "green",
+  SUCCESS: "green",
 };
 
 export default async function ReportDetailPage({
@@ -35,6 +41,7 @@ export default async function ReportDetailPage({
       session.user.permissions.includes("reports.review")) &&
     report.authorId !== session.user.id;
   const canEdit = report.authorId === session.user.id;
+  const isCEO = session.user.permissions.includes("reports.complete");
 
   const fieldValues: Record<string, string> = {};
   for (const fv of report.fieldValues) fieldValues[fv.fieldKey] = fv.value ?? "";
@@ -57,6 +64,9 @@ export default async function ReportDetailPage({
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <Badge tone={statusTone[report.status] ?? "gray"}>{report.status.replace(/_/g, " ")}</Badge>
+        {report.completedBy && (
+          <Badge tone="green">Completed by {report.completedBy.name}</Badge>
+        )}
         {report.project && (
           <Badge tone="slate">Project: {report.project.name}</Badge>
         )}
@@ -94,6 +104,10 @@ export default async function ReportDetailPage({
             </CardBody>
           </Card>
 
+          {report.recognitions && report.recognitions.length > 0 && (
+            <RecognitionDisplay recognitions={report.recognitions} />
+          )}
+
           <Card>
             <CardBody>
               <CommentSection
@@ -110,7 +124,16 @@ export default async function ReportDetailPage({
         </div>
 
         <div className="space-y-6">
-          {canReview && (
+          {isCEO && (
+            <Card>
+              <CardHeader title="CEO Review" />
+              <CardBody>
+                <CEOReportPanel reportId={report.id} authorId={report.authorId} currentStatus={report.status} />
+              </CardBody>
+            </Card>
+          )}
+
+          {canReview && !isCEO && (
             <Card>
               <CardHeader title="Review" />
               <CardBody>

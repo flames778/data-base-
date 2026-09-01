@@ -46,6 +46,10 @@ enum ReportStatus {
   REVISION_REQUESTED
   APPROVED
   REJECTED
+  ACTION_REQUIRED
+  RESOLVED
+  COMPLETED
+  SUCCESS
   ARCHIVED
 }
 
@@ -175,6 +179,9 @@ model User {
   reportStatusHistories ReportStatusHistory[]
   issueStatusHistories  IssueStatusHistory[]
   claimStatusHistories  ClaimStatusHistory[]
+  reportsCompleted      Report[]              @relation("ReportCompletedBy")
+  recognitionsReceived  RecognitionReward[]   @relation("RecognitionRecipient")
+  recognitionsGiven     RecognitionReward[]   @relation("RecognitionGivenBy")
 
   @@index([email])
   @@index([roleId])
@@ -338,10 +345,14 @@ model Report {
   approvedById    String?
   reviewerId      String?
   revisionNote    String?
+  completedAt     DateTime?
+  completedById   String?
+  completedBy     User?                 @relation("ReportCompletedBy", fields: [completedById], references: [id])
   data            Json?
   fieldValues     ReportFieldValue[]
   statusHistory   ReportStatusHistory[]
   comments        Comment[]
+  recognitions    RecognitionReward[]
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 
@@ -622,7 +633,30 @@ model ClaimComment {
 }
 
 // =====================================================================
-// NOTIFICATIONS
+// RECOGNITION & REWARDS
+// =====================================================================
+
+model RecognitionReward {
+  id          String   @id @default(cuid())
+  recipientId String
+  recipient   User     @relation("RecognitionRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  reportId    String?
+  report      Report?  @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  rewardType  String   // e.g., "excellent_work", "outstanding_performance", "well_done", "recognition_award"
+  message     String?  // Custom message from CEO
+  givenById   String
+  givenBy     User     @relation("RecognitionGivenBy", fields: [givenById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([recipientId])
+  @@index([reportId])
+  @@index([givenById])
+  @@index([createdAt])
+  @@map("recognition_rewards")
+}
+
+// =====================================================================
+// NOTIFICATIONS (append-only)
 // =====================================================================
 
 model Notification {

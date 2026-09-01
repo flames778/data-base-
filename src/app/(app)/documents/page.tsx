@@ -27,16 +27,16 @@ export default async function DocumentsPage() {
         }
       />
 
-      <div className="mb-4 flex gap-2">
-        <Link href="/documents" className="rounded-full border border-primary bg-primary px-3 py-1 text-xs font-medium text-white">
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Link href="/documents" className="rounded-full border border-blue-600 bg-blue-600 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_20px_rgba(37,99,235,0.25)]">
           Standard documents
         </Link>
-        <Link href="/documents/vital" className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-zinc-50">
+        <Link href="/documents/vital" className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700">
           Vital documents
         </Link>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden rounded-[28px] border border-slate-200 bg-white/90 shadow-[0_18px_35px_rgba(15,23,42,0.04)]">
         <CardBody className="p-0">
           {docs.length === 0 ? (
             <div className="px-5 py-4">

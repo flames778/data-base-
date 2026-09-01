@@ -34,16 +34,16 @@ export default async function CeoDashboard() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 overflow-hidden rounded-[28px]">
           <CardHeader
             title="Projects by status"
-            action={<Link className="text-xs text-primary hover:underline" href="/projects">All projects</Link>}
+            action={<Link className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline" href="/projects">All projects</Link>}
           />
           <CardBody>
             {data.totalProjects === 0 ? (
               <EmptyState title="No projects yet." />
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {(["ACTIVE", "PLANNING", "ON_HOLD", "COMPLETED", "CANCELLED"] as const).map((s) => {
                   const count = data.projectsByStatus[s] ?? 0;
                   if (count === 0) return null;
@@ -51,12 +51,12 @@ export default async function CeoDashboard() {
                   return (
                     <div key={s}>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium capitalize">{s.replace(/_/g, " ")}</span>
-                        <span className="text-muted-foreground">{count}</span>
+                        <span className="font-semibold capitalize text-slate-700">{s.replace(/_/g, " ")}</span>
+                        <span className="text-slate-500">{count}</span>
                       </div>
-                      <div className="mt-1 h-2 overflow-hidden rounded bg-zinc-100">
+                      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100">
                         <div
-                          className="h-full rounded bg-primary"
+                          className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-500"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -68,41 +68,41 @@ export default async function CeoDashboard() {
           </CardBody>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden rounded-[28px]">
           <CardHeader
             title="Key documents"
-            action={<Link className="text-xs text-primary hover:underline" href="/documents/vital">Vital</Link>}
+            action={<Link className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline" href="/documents/vital">Vital</Link>}
           />
           <CardBody>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">All documents</span>
-                <span className="font-semibold">{data.totalDocuments}</span>
+            <div className="space-y-4 text-sm">
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2.5">
+                <span className="text-slate-600">All documents</span>
+                <span className="font-bold text-slate-900">{data.totalDocuments}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Vital documents</span>
-                <span className="font-semibold">{data.vitalDocuments}</span>
+              <div className="flex items-center justify-between rounded-2xl bg-sky-50 px-3 py-2.5">
+                <span className="text-sky-700">Vital documents</span>
+                <span className="font-bold text-sky-900">{data.vitalDocuments}</span>
               </div>
             </div>
           </CardBody>
         </Card>
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-6 overflow-hidden rounded-[28px]">
         <CardHeader
           title="Recent activity"
-          action={<a className="text-xs text-primary hover:underline" href="/audit">Audit logs</a>}
+          action={<a className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline" href="/audit">Audit logs</a>}
         />
         <CardBody>
           {data.recentActivity.length === 0 ? (
             <EmptyState title="No recorded activity yet." />
           ) : (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-slate-200">
               {data.recentActivity.map((a) => (
-                <li key={a.id} className="flex items-center gap-3 py-2.5 text-sm">
+                <li key={a.id} className="flex items-center gap-3 py-3 text-sm">
                   <Badge tone="slate">{a.action}</Badge>
-                  <span className="text-muted-foreground">by {a.userName ?? "system"}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
+                  <span className="text-slate-600">by {a.userName ?? "system"}</span>
+                  <span className="ml-auto text-xs text-slate-500">
                     {new Date(a.createdAt).toLocaleString()}
                   </span>
                 </li>
