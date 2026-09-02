@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -72,5 +72,7 @@ export default withSentryConfig(nextConfig, {
   tunnelRoute: "/monitoring",
 
   // Reduce noisy source-map upload logs; only matters when authToken is set.
-  disableLogger: true,
+  webpack: {
+    treeshake: { removeDebugLogging: true },
+  },
 });
