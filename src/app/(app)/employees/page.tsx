@@ -13,6 +13,7 @@ export default async function EmployeesPage() {
 
   const users = await prisma.user.findMany({
     orderBy: { name: "asc" },
+    take: 500,
     include: {
       role: { select: { displayName: true, name: true } },
     },

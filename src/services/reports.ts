@@ -62,6 +62,7 @@ export async function listVisibleReports(session: AuthSession, opts: {
   const reports = await prisma.report.findMany({
     where: where as never,
     orderBy: { createdAt: "desc" },
+    take: 200,
     include: {
       author: { select: { name: true } },
       template: { select: { name: true } },

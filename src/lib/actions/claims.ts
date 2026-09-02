@@ -55,16 +55,19 @@ export async function createClaim(input: {
     });
 
     const reviewers = await claimReviewerIds();
-    for (const rid of reviewers) {
-      if (rid === session.user.id) continue;
-      await notify({
-        userId: rid,
-        type: "CLAIM_UPDATED",
-        title: "New claim submitted",
-        message: `${session.user.name} submitted a claim: ${claim.title}`,
-        link: `/claims/${claim.id}`,
-      });
-    }
+    await Promise.all(
+      reviewers
+        .filter((rid) => rid !== session.user.id)
+        .map((rid) =>
+          notify({
+            userId: rid,
+            type: "CLAIM_UPDATED",
+            title: "New claim submitted",
+            message: `${session.user.name} submitted a claim: ${claim.title}`,
+            link: `/claims/${claim.id}`,
+          })
+        )
+    );
 
     revalidatePath("/claims");
     return { ok: true as const, claimId: claim.id };

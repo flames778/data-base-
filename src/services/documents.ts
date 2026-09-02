@@ -65,6 +65,7 @@ export async function listVisibleDocuments(
   return prisma.document.findMany({
     where: where as never,
     orderBy: { updatedAt: "desc" },
+    take: 200,
     include: {
       uploader: { select: { name: true } },
       project: { select: { name: true } },

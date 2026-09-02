@@ -14,6 +14,7 @@ export async function listVisibleClaims(session: Session) {
       ? undefined
       : { applicantId: userId },
     orderBy: { createdAt: "desc" },
+    take: 200,
     include: {
       applicant: { select: { name: true } },
       project: { select: { name: true } },

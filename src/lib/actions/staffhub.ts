@@ -54,16 +54,19 @@ export async function createForumPost(input: {
 
     if (post.isAnnouncement) {
       const recipients = await adminAndCeoIds();
-      for (const rid of recipients) {
-        if (rid === session.user.id) continue;
-        await notify({
-          userId: rid,
-          type: "ANNOUNCEMENT",
-          title: "New announcement",
-          message: post.title,
-          link: `/staff-hub/posts/${post.id}`,
-        });
-      }
+      await Promise.all(
+        recipients
+          .filter((rid) => rid !== session.user.id)
+          .map((rid) =>
+            notify({
+              userId: rid,
+              type: "ANNOUNCEMENT",
+              title: "New announcement",
+              message: post.title,
+              link: `/staff-hub/posts/${post.id}`,
+            })
+          )
+      );
     }
 
     revalidatePath("/staff-hub");

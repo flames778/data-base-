@@ -59,46 +59,46 @@ export async function getEmployeeDashboard(
   const userId = session.user.id;
   const myProjects = await getProjectIdsForUser(userId);
 
-  const [reports, issues, claims, projects] = await Promise.all([
-    prisma.report.findMany({
-      where: { authorId: userId },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      include: {
-        template: { select: { name: true } },
-        project: { select: { name: true } },
-      },
-    }),
-    prisma.issue.findMany({
-      where: { creatorId: userId },
-      orderBy: { updatedAt: "desc" },
-      take: 6,
-    }),
-    prisma.claim.findMany({
-      where: { applicantId: userId },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-    prisma.project.findMany({
-      where: { id: { in: myProjects } },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-  ]);
-
-  const myReportCount = await prisma.report.count({ where: { authorId: userId } });
-  const myPendingReports = await prisma.report.count({
-    where: { authorId: userId, status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
-  });
-  const myRevisionRequests = await prisma.report.count({
-    where: { authorId: userId, status: "REVISION_REQUESTED" },
-  });
-  const myActiveIssues = await prisma.issue.count({
-    where: {
-      OR: [{ creatorId: userId }, { assigneeId: userId }],
-      status: { in: ["OPEN", "UNDER_REVIEW", "ASSIGNED", "IN_PROGRESS"] },
-    },
-  });
+  const [reports, issues, claims, projects, myReportCount, myPendingReports, myRevisionRequests, myActiveIssues] =
+    await Promise.all([
+      prisma.report.findMany({
+        where: { authorId: userId },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+        include: {
+          template: { select: { name: true } },
+          project: { select: { name: true } },
+        },
+      }),
+      prisma.issue.findMany({
+        where: { creatorId: userId },
+        orderBy: { updatedAt: "desc" },
+        take: 6,
+      }),
+      prisma.claim.findMany({
+        where: { applicantId: userId },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+      prisma.project.findMany({
+        where: { id: { in: myProjects } },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      prisma.report.count({ where: { authorId: userId } }),
+      prisma.report.count({
+        where: { authorId: userId, status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
+      }),
+      prisma.report.count({
+        where: { authorId: userId, status: "REVISION_REQUESTED" },
+      }),
+      prisma.issue.count({
+        where: {
+          OR: [{ creatorId: userId }, { assigneeId: userId }],
+          status: { in: ["OPEN", "UNDER_REVIEW", "ASSIGNED", "IN_PROGRESS"] },
+        },
+      }),
+    ]);
 
   return {
     myReportCount,
@@ -159,52 +159,53 @@ export async function getLeadDashboard(
   session: Session
 ): Promise<LeadDashboardData> {
   const userId = session.user.id;
-  const projectIds = await getProjectIdsForUser(userId);
-  const leadProjectIds = (
-    await prisma.project.findMany({
+  const [projectIds, leadProjects] = await Promise.all([
+    getProjectIdsForUser(userId),
+    prisma.project.findMany({
       where: { leadId: userId },
       select: { id: true },
-    })
-  ).map((p) => p.id);
+    }),
+  ]);
+  const leadProjectIds = leadProjects.map((p) => p.id);
 
   // Lead can review reports from projects they lead OR are a member of
   const reviewableIds = [...new Set([...projectIds, ...leadProjectIds])];
 
-  const [projects, reports] = await Promise.all([
-    prisma.project.findMany({
-      where: { id: { in: reviewableIds } },
-      orderBy: { createdAt: "desc" },
-      include: { _count: true },
-    }),
-    prisma.report.findMany({
-      where: { projectId: { in: reviewableIds } },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: {
-        author: { select: { name: true } },
-        project: { select: { name: true } },
-      },
-    }),
-  ]);
-
-  const reportCount = await prisma.report.count({
-    where: { projectId: { in: reviewableIds } },
-  });
-  const pendingReviews = await prisma.report.count({
-    where: {
-      projectId: { in: reviewableIds },
-      status: "SUBMITTED",
-    },
-  });
-  const issueCount = await prisma.issue.count({
-    where: { projectId: { in: reviewableIds } },
-  });
-  const openIssues = await prisma.issue.count({
-    where: {
-      projectId: { in: reviewableIds },
-      status: { in: ["OPEN", "UNDER_REVIEW", "ASSIGNED", "IN_PROGRESS"] },
-    },
-  });
+  const [projects, reports, reportCount, pendingReviews, issueCount, openIssues] =
+    await Promise.all([
+      prisma.project.findMany({
+        where: { id: { in: reviewableIds } },
+        orderBy: { createdAt: "desc" },
+        include: { _count: true },
+      }),
+      prisma.report.findMany({
+        where: { projectId: { in: reviewableIds } },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        include: {
+          author: { select: { name: true } },
+          project: { select: { name: true } },
+        },
+      }),
+      prisma.report.count({
+        where: { projectId: { in: reviewableIds } },
+      }),
+      prisma.report.count({
+        where: {
+          projectId: { in: reviewableIds },
+          status: "SUBMITTED",
+        },
+      }),
+      prisma.issue.count({
+        where: { projectId: { in: reviewableIds } },
+      }),
+      prisma.issue.count({
+        where: {
+          projectId: { in: reviewableIds },
+          status: { in: ["OPEN", "UNDER_REVIEW", "ASSIGNED", "IN_PROGRESS"] },
+        },
+      }),
+    ]);
 
   return {
     projectCount: projects.length,

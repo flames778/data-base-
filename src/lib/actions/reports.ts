@@ -148,16 +148,19 @@ export async function saveReport(input: {
     if (parsed.submit && updated.projectId) {
       // Notify project reviewers
       const reviewers = await projectReviewers(updated.projectId);
-      for (const rid of reviewers) {
-        if (rid === session.user.id) continue;
-        await notify({
-          userId: rid,
-          type: "REPORT_SUBMITTED",
-          title: "New report submitted",
-          message: `${session.user.name} submitted "${updated.title}" for review.`,
-          link: `/reports/${updated.id}`,
-        });
-      }
+      await Promise.all(
+        reviewers
+          .filter((rid) => rid !== session.user.id)
+          .map((rid) =>
+            notify({
+              userId: rid,
+              type: "REPORT_SUBMITTED",
+              title: "New report submitted",
+              message: `${session.user.name} submitted "${updated.title}" for review.`,
+              link: `/reports/${updated.id}`,
+            })
+          )
+      );
     }
 
     if (parsed.submit) redirect(SUCCESS_REDIRECT);
