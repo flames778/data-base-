@@ -28,7 +28,9 @@ export default async function proxy(req: NextRequest) {
   if (!isProtected) return NextResponse.next();
 
   const hasSessionCookie = req.cookies.getAll().some((c) =>
-    c.name.startsWith(AUTH_COOKIE_PREFIX)
+    c.name === AUTH_COOKIE_PREFIX ||
+    c.name.endsWith(`.${AUTH_COOKIE_PREFIX}`) ||
+    c.name.includes(AUTH_COOKIE_PREFIX)
   );
 
   // Allow /login and /api/auth to pass through regardless.
