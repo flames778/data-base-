@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/passwords";
@@ -7,6 +7,7 @@ import {
   clearAttempts,
   extractIp,
   recordFailedAttempt,
+  RateLimitedError,
 } from "@/lib/login-rate-limit";
 import type { RoleName } from "@prisma/client";
 import type { PermissionKey } from "@/lib/permissions";
@@ -16,6 +17,14 @@ import type { PermissionKey } from "@/lib/permissions";
 // a DB query on more requests. Raise if the extra query load matters more
 // than fast revocation for your deployment.
 const REFRESH_INTERVAL_MS = 60_000; // 1 minute
+
+// Thrown when the rate limiter rejects an attempt. Extending CredentialsSignin
+// (rather than a plain Error) tells Auth.js this is an expected sign-in
+// rejection, so it redirects back to /login with ?error=<code> instead of
+// surfacing an unhandled 500 CallbackRouteError.
+class TooManyAttemptsError extends CredentialsSignin {
+  code = "too-many-attempts";
+}
 
 /**
  * Auth.js (NextAuth v5) configuration for first-party credentials auth.
@@ -51,9 +60,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const ipAddress = extractIp(request.headers);
 
         // Check the limit before doing any DB/bcrypt work for this attempt.
-        // Throwing here surfaces as a CredentialsSignin error to the client
-        // without leaking whether the email exists.
-        await assertNotRateLimited(email, ipAddress);
+        // RateLimitedError is translated into a Auth.js-recognized
+        // CredentialsSignin subclass below so it redirects cleanly to
+        // /login?error=too-many-attempts instead of throwing an unhandled
+        // 500. It intentionally doesn't leak whether the email exists.
+        try {
+          await assertNotRateLimited(email, ipAddress);
+        } catch (e) {
+          if (e instanceof RateLimitedError) throw new TooManyAttemptsError();
+          throw e;
+        }
 
         const dbUser = await prisma.user.findUnique({ where: { email } });
         if (!dbUser || !dbUser.passwordHash || dbUser.status !== "ACTIVE") {

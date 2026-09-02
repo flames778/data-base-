@@ -5,6 +5,8 @@ import Link from "next/link";
 const ERROR_MESSAGES: Record<string, string> = {
   CredentialsSignin:
     "Invalid email or password. Please check your credentials properly and try again.",
+  "too-many-attempts":
+    "Too many sign-in attempts. Please wait 15 minutes and try again.",
   Configuration:
     "The sign-in provider is not configured correctly. Please contact your administrator.",
   AccessDenied:
@@ -15,16 +17,16 @@ const ERROR_MESSAGES: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; code?: string }>;
 }) {
   const session = await auth();
   if (session?.user?.id) {
     redirect("/dashboard");
   }
 
-  const { error } = await searchParams;
+  const { error, code } = await searchParams;
   const errorMessage = error
-    ? (ERROR_MESSAGES[error] ?? ERROR_MESSAGES.Default)
+    ? (ERROR_MESSAGES[code ?? ""] ?? ERROR_MESSAGES[error] ?? ERROR_MESSAGES.Default)
     : null;
 
   return (
