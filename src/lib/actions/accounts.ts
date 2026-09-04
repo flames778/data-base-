@@ -204,6 +204,59 @@ export async function changeOwnPassword(input: unknown) {
 }
 
 /**
+ * Remove (hard delete) a user — CEO/Admin only.
+ * Prevents self-deletion and cleans up team memberships. If the user owns
+ * reports/projects, deletion will cascade per schema; use Disable for soft-remove.
+ */
+export async function deleteUser(input: unknown) {
+  const session = await requireAuth();
+  await requirePermission("users.manage", session);
+  const h = await headers();
+  const info = clientInfo(h);
+
+  try {
+    const parsed = (input as { userId?: string });
+    const userId = typeof parsed?.userId === "string" ? parsed.userId.trim() : "";
+    if (!userId) return { ok: false as const, error: "User ID is required." };
+
+    const target = await prisma.user.findUnique({ where: { id: userId } });
+    if (!target) throw new NotFoundError();
+    if (target.email === session.user.email) {
+      return { ok: false as const, error: "You cannot remove your own account." };
+    }
+
+    // Clean up memberships first, then delete user (reports/documents cascade via FK)
+    await prisma.$transaction([
+      prisma.userTeamMembership.deleteMany({ where: { userId } }),
+      prisma.projectMember.deleteMany({ where: { userId } }),
+    ]);
+
+    await prisma.user.delete({ where: { id: userId } });
+
+    await audit.user(session.user, {
+      action: "user.deleted",
+      resource: "User",
+      resourceId: userId,
+      ipAddress: info.ipAddress,
+      userAgent: info.userAgent,
+      result: "success",
+      metadata: { email: target.email, name: target.name },
+    });
+
+    revalidatePath("/admin/users");
+    revalidatePath("/employees");
+    return { ok: true as const };
+  } catch (e) {
+    // Prisma P2003 foreign key constraint → suggest disabling instead
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.includes("Foreign key constraint") || msg.includes("P2003")) {
+      return { ok: false as const, error: "Cannot hard-delete: user still owns reports/projects/documents. Disable the account instead." };
+    }
+    return errorResult(e);
+  }
+}
+
+/**
  * Set a user's team memberships (replace the full set; admin only).
  * This is a sensitive change and is audited.
  */

@@ -1,6 +1,6 @@
-import { auth, signIn } from "@/auth";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { LoginForm } from "@/components/login-form";
 
 const ERROR_MESSAGES: Record<string, string> = {
   CredentialsSignin:
@@ -74,66 +74,7 @@ export default async function LoginPage({
             </div>
           )}
 
-          <form
-            className="space-y-4"
-            action={async (formData: FormData) => {
-              "use server";
-              await signIn("credentials", {
-                email: formData.get("email"),
-                password: formData.get("password"),
-                redirectTo: "/dashboard",
-              });
-            }}
-          >
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-1.5 block text-[13px] font-semibold text-slate-700"
-              >
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.75 text-[14px] text-slate-900 placeholder-slate-400 shadow-sm transition-all focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
-                placeholder="you@precpearl.local"
-              />
-            </div>
-            <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="text-[13px] font-semibold text-slate-700"
-                >
-                  Password
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-[12px] font-semibold text-blue-600 hover:text-blue-700"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.75 text-[14px] text-slate-900 placeholder-slate-400 shadow-sm transition-all focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
-                placeholder="••••••••"
-              />
-            </div>
-            <button
-              type="submit"
-              className="mt-2 w-full rounded-2xl bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 px-4 py-3 text-[14px] font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.35)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_28px_rgba(37,99,235,0.42)] active:translate-y-0"
-            >
-              Sign in
-            </button>
-          </form>
+          <LoginForm />
 
           <p className="mt-6 text-center text-[11px] text-slate-400">
             Access is restricted to authorized Prec Pearl employees only.

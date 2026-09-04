@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { RoleName } from "@prisma/client";
 import type { Session } from "next-auth";
+import { unstable_cache } from "next/cache";
 
 /**
  * Dashboard statistics — ALL derived from the live PostgreSQL database.
@@ -253,7 +254,7 @@ export interface CeoDashboardData {
   projectsByStatus: Record<string, number>;
 }
 
-export async function getCeoDashboard(): Promise<CeoDashboardData> {
+export const getCeoDashboard = unstable_cache(async (): Promise<CeoDashboardData> => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 

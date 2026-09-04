@@ -143,6 +143,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, PermissionKey[]> = {
     "documents.view_vital",
     "projects.view",
     "projects.manage",
+    "teams.manage",
     "users.manage",
     "users.view_all",
     "permissions.manage",
