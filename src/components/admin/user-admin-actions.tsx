@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { adminResetPassword, setTeamMembership } from "@/lib/actions/accounts";
+import { adminResetPassword, setTeamMembership, deleteUser } from "@/lib/actions/accounts";
 
 export function UserAdminActions({
   userId,
@@ -20,6 +20,7 @@ export function UserAdminActions({
   const [error, setError] = useState<string | null>(null);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedTeams, setSelectedTeams] = useState<string[]>(initialTeamIds);
 
   async function resetPassword() {
@@ -37,6 +38,15 @@ export function UserAdminActions({
     setBusy(true);
     setError(null);
     const res = await setTeamMembership({ userId, teamIds: selectedTeams });
+    if (!res.ok) { setError(res.error ?? "Something went wrong."); setBusy(false); return; }
+    router.refresh();
+    setBusy(false);
+  }
+
+  async function removeUser() {
+    setBusy(true);
+    setError(null);
+    const res = await deleteUser({ userId });
     if (!res.ok) { setError(res.error ?? "Something went wrong."); setBusy(false); return; }
     router.refresh();
     setBusy(false);
@@ -110,6 +120,31 @@ export function UserAdminActions({
           </button>
         </div>
       )}
+
+      <div className="mt-3 border-t border-border pt-3">
+        {!confirmDelete ? (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="w-fit rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100"
+          >
+            Remove user
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-red-600">Remove {userName}? This cannot be undone.</span>
+            <button
+              onClick={removeUser}
+              disabled={busy}
+              className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {busy ? "Removing…" : "Confirm remove"}
+            </button>
+            <button onClick={() => setConfirmDelete(false)} className="rounded-md border border-border px-3 py-1.5 text-xs">
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

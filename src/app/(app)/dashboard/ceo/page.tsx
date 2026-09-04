@@ -90,6 +90,35 @@ export default async function CeoDashboard() {
 
       <Card className="mt-6 overflow-hidden rounded-[28px]">
         <CardHeader
+          title="Administration"
+          action={
+            <div className="flex gap-2">
+              <Link className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline" href="/admin/users">Users</Link>
+              <Link className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline" href="/admin/teams">Teams</Link>
+              <Link className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline" href="/admin/templates">Templates</Link>
+            </div>
+          }
+        />
+        <CardBody>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Link href="/admin/users" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 hover:bg-white">
+              <p className="text-sm font-semibold text-slate-900">User Management</p>
+              <p className="text-xs text-slate-500">Create users, assign roles, reset passwords</p>
+            </Link>
+            <Link href="/admin/teams" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 hover:bg-white">
+              <p className="text-sm font-semibold text-slate-900">Team Management</p>
+              <p className="text-xs text-slate-500">Create teams and assign members</p>
+            </Link>
+            <Link href="/admin/templates" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 hover:bg-white">
+              <p className="text-sm font-semibold text-slate-900">Report Templates</p>
+              <p className="text-xs text-slate-500">Manage report templates</p>
+            </Link>
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card className="mt-6 overflow-hidden rounded-[28px]">
+        <CardHeader
           title="Recent activity"
           action={<a className="text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline" href="/audit">Audit logs</a>}
         />
